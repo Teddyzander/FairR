@@ -76,7 +76,7 @@ def fetch_adult_data():
     """
     Gets the adult income data set from the fairlearn package and returns it as standardised data
 
-    :return: the feature values, the target values, dictionary for the sensitive features, list categorising each
+    :return: the feature values, the target values, dictionary for the sensitive values, list categorising each
     feature (continuous [c] or discrete [d]), pairs containing the lower and upper bound of each feature
     """
 
@@ -86,7 +86,7 @@ def fetch_adult_data():
     # split data into discrete features and continuous features
     dis_labels, cont_labels, cat = get_data_type(data)
 
-    # standardise the data set
+    # standardise the data set (discrete data is numeric, continuous has mean 0, variance 1)
     data = standardise_data(data, dis_labels, cont_labels)
 
     # save sensitive feature column and remove it from the data set
