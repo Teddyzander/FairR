@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from fairlearn.datasets import fetch_adult
 
 
@@ -14,7 +13,7 @@ def get_data_type(data):
     # get number of labels and allocate memory to store list of label types
     labels = data.columns
     num_labels = len(np.asarray(labels))
-    cat = [None] * num_labels
+    cat = [str] * num_labels
 
     # split labels into continuous list and discrete list
     cont_labels = np.asarray(data.select_dtypes('number').columns)
@@ -63,7 +62,8 @@ def get_bounds(data):
     # preallocate memory to hold boundaries
     labels = data.columns
     num_labels = len(labels)
-    bounds = [None] * num_labels
+    data_type = [float, float]
+    bounds = [data_type] * num_labels
 
     # find boundaries for each label
     for i in range(0, num_labels):
@@ -103,4 +103,4 @@ def fetch_adult_data():
 
 
 if __name__ == '__main__':
-    fetch_adult_data()
+    input, target, sens, cat, bounds = fetch_adult_data()
