@@ -53,6 +53,25 @@ def standardise_data(data, dis_labels, con_labels):
     return data
 
 
+def get_bounds(data):
+    """
+    Gets the min and max values of each feature
+    :param data: data frame
+    :return: list of pairs of boundaries
+    """
+
+    # preallocate memory to hold boundaries
+    labels = data.columns
+    num_labels = len(labels)
+    bounds = [None] * num_labels
+
+    # find boundaries for each label
+    for i in range(0, num_labels):
+        bounds[i] = [data[labels[i]].min(), data[labels[i]].max()]
+
+    return bounds
+
+
 def fetch_adult_data():
     """
     Gets the adult income data set from the fairlearn package and returns it as standardised data
@@ -69,6 +88,14 @@ def fetch_adult_data():
 
     # standardise the data set
     data = standardise_data(data, dis_labels, cont_labels)
+
+    # save sensitive feature column and remove it from the data set
+    sensitive = data['sex']
+    data = data.drop('sex', axis=1)
+
+    # define the upper and lower bound of each feature column
+    bounds = get_bounds(data)
+
 
 if __name__ == '__main__':
     fetch_adult_data()
