@@ -8,7 +8,7 @@ def get_data_type(data):
     Takes in a data frame with headers and returns the data type (continuous [d] or discrete [c]) of each feature
     :param data: pandas data frame
     :return: Three lists. First list contains discrete labels, second list contains continuous labels, third list
-    contains the order of label types
+    contains the order of label types eg ['c', 'd', 'd', ...]
     """
 
     # get number of labels and allocate memory to store list of label types
