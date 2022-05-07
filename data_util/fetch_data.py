@@ -96,6 +96,11 @@ def fetch_adult_data():
     # define the upper and lower bound of each feature column
     bounds = get_bounds(data)
 
+    # standardise the target data
+    target = target.astype('category').cat.codes
+
+    return data.values, target.values, {'sex': sensitive.values}, cat, bounds
+
 
 if __name__ == '__main__':
     fetch_adult_data()
