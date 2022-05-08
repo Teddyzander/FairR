@@ -72,6 +72,38 @@ def get_bounds(data):
     return bounds
 
 
+def prepare_data(data, target, sens):
+    """
+    Prepares the data to have the robustness measured
+    :param data: Input data frame
+    :param target: Output data frame
+    :param sens: Sensitive feature label
+    :return: the original input data standardised with the sensitive feature removed, the original target data as
+    numeric values, the sensitive data, the upper and lower bounds of each feature.
+    """
+
+    # split data into discrete features and continuous features
+    dis_labels, cont_labels, cat = get_data_type(data)
+
+    # standardise the data set (discrete data is numeric, continuous has mean 0 and variance 1)
+    data = standardise_data(data, dis_labels, cont_labels)
+
+    # save sensitive feature column and remove it from the data set, including from the categories list
+    headers = list(data.columns)
+    sens_index = headers.index(sens)
+    del cat[sens_index]
+    sensitive = data[sens]
+    data = data.drop(sens, axis=1)
+
+    # define the upper and lower bound of each feature column
+    bounds = get_bounds(data)
+
+    # standardise the target data
+    target = target.astype('category').cat.codes
+
+    return data, target, sensitive, cat, bounds
+
+
 def fetch_adult_data():
     """
     Gets the adult income data set from the fairlearn package and returns it as standardised data
@@ -83,21 +115,8 @@ def fetch_adult_data():
     # get the data set as a data frame
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
 
-    # split data into discrete features and continuous features
-    dis_labels, cont_labels, cat = get_data_type(data)
-
-    # standardise the data set (discrete data is numeric, continuous has mean 0, variance 1)
-    data = standardise_data(data, dis_labels, cont_labels)
-
-    # save sensitive feature column and remove it from the data set
-    sensitive = data['sex']
-    data = data.drop('sex', axis=1)
-
-    # define the upper and lower bound of each feature column
-    bounds = get_bounds(data)
-
-    # standardise the target data
-    target = target.astype('category').cat.codes
+    # process the data in preperation to measure the robustness
+    data, target, sensitive, cat, bounds = prepare_data(data, target, 'sex')
 
     return data.values, target.values, {'sex': sensitive.values}, cat, bounds
 
