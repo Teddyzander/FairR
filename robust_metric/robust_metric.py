@@ -6,8 +6,10 @@ class RobustMetric:
     with a particular fairness metric
     """
 
-    def __int__(self, fair_metric, data=None, model="SVC"):
+    def __int__(self, fair_metric, sens, data=None, target=None, model="SVC"):
         if data is None:
             self.data = data_util.fetch_adult_data()
         else:
-            self.data = data_util.standardise_data()
+            self.data, self.target, self. = data_util.prepare_data(data, target, sens)
+
+        self.

@@ -101,7 +101,7 @@ def prepare_data(data, target, sens):
     # standardise the target data
     target = target.astype('category').cat.codes
 
-    return data, target, sensitive, cat, bounds
+    return data.values, target.values, {sens: sensitive.values}, cat, bounds
 
 
 def fetch_adult_data():
@@ -118,7 +118,7 @@ def fetch_adult_data():
     # process the data in preperation to measure the robustness
     data, target, sensitive, cat, bounds = prepare_data(data, target, 'sex')
 
-    return data.values, target.values, {'sex': sensitive.values}, cat, bounds
+    return data, target, sensitive, cat, bounds
 
 
 if __name__ == '__main__':
