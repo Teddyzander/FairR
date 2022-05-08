@@ -7,9 +7,10 @@ class RobustMetric:
     with a particular fairness metric
     """
 
-    def __init__(self):
-        self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.fetch_adult_data()
-
-
-if __name__ == '__main__':
-    test = RobustMetric()
+    def __init__(self, data=None, target=None, sens=None):
+        if data is None and target is None and sens is None:
+            print("fetching adult data...")
+            self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.fetch_adult_data()
+        else:
+            print("processing data inputted data...")
+            self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.prepare_data(data, target, sens)
