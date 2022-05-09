@@ -6,12 +6,14 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
     test = RobustMetric(max_iter=1000)
     test.split_data()
-    test.problem_summary()
     score_base = test.run_baseline()
-    # score_in = test.run_inprocessing()
     score_pre = test.run_preprocessing()
+    score_in = test.run_inprocessing()
+    score_post = test.run_postprocessing()
 
-    print(score_base)
-    print(score_pre)
+    print('Baseline score: ' + str(score_base))
+    print('Pre-processing score: ' + str(score_pre))
+    print('In-processing score: ' + str(score_in))
+    print('Post-processing score: ' + str(score_post))
 
     test.problem_summary()

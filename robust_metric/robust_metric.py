@@ -1,6 +1,7 @@
 import data_util.fetch_data as data_util
 import numpy as np
 from sklearn.svm import SVC
+from sklearn.metrics._classification import accuracy_score
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
@@ -12,7 +13,8 @@ class RobustMetric:
     with a particular fairness metric
     """
 
-    def __init__(self, data=None, target=None, sens=None, model_type='SVC', fairness_constraint='DP', max_iter=1000):
+    def __init__(self, data=None, target=None, sens=None, model_type='SVC',
+                 fairness_constraint='dp', max_iter=1000):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -42,11 +44,13 @@ class RobustMetric:
             print('Model not included')
 
         # define fairness constraint to be used
-        self.fairness_constraint = 'Demographic Parity'
+        self.fairness_constraint = 'demographic_parity'
+        self.fairness_constraint_full = 'Demographic Parity'
         self.fairness_constraint_func = DemographicParity()
 
-        if fairness_constraint == 'EO':
-            self.fairness_constraint = 'Equalized Odds'
+        if fairness_constraint == 'eo':
+            self.fairness_constraint = 'equalized_odds'
+            self.fairness_constraint_full = 'Equalized Odds'
             self.fairness_constraint_func = EqualizedOdds
 
         # define empty lists for training and testing data across inputs, outputs, and sensitive data
@@ -61,6 +65,7 @@ class RobustMetric:
         self.baseline_model = None
         self.inprocessing_model = None
         self.preprocessing_model = None
+        self.postprocessing_model = None
 
     def problem_summary(self):
         """
@@ -70,7 +75,7 @@ class RobustMetric:
 
         print('\n---- SUMMARY OF ROBUSTNESS SETTINGS AND DATA ----\n')
         print('Learning Model: {}'.format(self.model_type))
-        print('Fairness Constraint: {}'.format(self.fairness_constraint))
+        print('Fairness Constraint: {}'.format(self.fairness_constraint_full))
         print('Maximum number of iterations: {}'.format(self.max_iter))
 
         if len(self.x_tr) == 0:
@@ -81,6 +86,7 @@ class RobustMetric:
         print('Baseline Model: {}'.format(self.baseline_model))
         print('Preprocessing Model: {}'.format(self.preprocessing_model))
         print('Inprocessing Model: {}'.format(self.inprocessing_model))
+        print('Postprcessing Model: {}'.format(self.postprocessing_model))
 
         print('\n_________________________________________________')
 
@@ -148,7 +154,7 @@ class RobustMetric:
         self.preprocessing_model = self.model(max_iter=self.max_iter)
         self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
-        # get score of the  pre-processing model with the testing data
+        # get score of the pre-processing model with the testing data
         score = self.baseline_model.score(x_te_pre, self.y_te)
 
         return score
@@ -172,8 +178,25 @@ class RobustMetric:
         # run the optimisation model for the defined parameters over the training dataset
         self.inprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
 
-        # get score of the in processing model with the testing data
-        score = 1 - (np.sum(np.abs(self.inprocessing_model.predict(self.x_te, random_state=random_state)
-                                   - self.y_te)) / len(self.y_te))
+        # get score of the in-processing model with the testing data
+        output = self.inprocessing_model.predict(self.x_te, random_state=random_state)
+        score = accuracy_score(self.y_te, output)
+
+        return score
+
+    def run_postprocessing(self):
+
+        # define post-processing model
+        self.postprocessing_model = ThresholdOptimizer(
+            estimator=self.baseline_model,
+            constraints=self.fairness_constraint,
+            prefit=True)
+
+        # fit the postprocessing model with the allocated fairness constraint
+        self.postprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
+
+        # get score of the post-processing model with the testing data
+        output = self.postprocessing_model.predict(self.x_te, sensitive_features=self.sens_te)
+        score = accuracy_score(self.y_te, output)
 
         return score
