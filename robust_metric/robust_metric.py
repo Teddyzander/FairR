@@ -112,7 +112,7 @@ class RobustMetric:
         """
 
         # get name of sensitive feature
-        sens_key, sens_value = list(self.sensitive.items())[0]
+        sens_key = list(self.sensitive.keys())[0]
 
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
