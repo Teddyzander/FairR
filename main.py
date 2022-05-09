@@ -1,16 +1,13 @@
-# This is a sample Python script.
+from robust_metric.robust_metric import RobustMetric
+import warnings
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+warnings.filterwarnings("ignore")
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    test = RobustMetric()
+    test.problem_summary()
+    test.split_data()
+    test.problem_summary()
+    score = test.run_baseline()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    print(score)

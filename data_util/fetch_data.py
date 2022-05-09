@@ -1,5 +1,24 @@
 import numpy as np
 from fairlearn.datasets import fetch_adult
+from sklearn.model_selection import train_test_split
+
+
+def split(data, target, sensitive, ratio=0.7, seed=666, sens_name='sex'):
+    """
+    Splits the data into training data and testing data
+    :param data: input data
+    :param target: target data
+    :param sensitive: sensitive data
+    :param ratio: ratio of data split (eg 0.7 is 70% training, 30% testing)
+    :param seed: set pseudo-random seed so experiments can be repeated with same test/train split
+    :param sens_name: name of sensitive label
+    :return: x_tr is the training input, y_tr is the testing output, sens_tr is the training sensitive data input,
+    x_te is the testing input, y_te is the testing output, sens_te is the testing sensitive data input
+    """
+
+    sens = sensitive[sens_name]
+    x_tr, x_te, y_tr, y_te, sens_tr, sens_te = train_test_split(data, target, sens, train_size=ratio, random_state=seed)
+    return x_tr, y_tr, sens_tr, x_te, y_te, sens_te
 
 
 def get_data_type(data):
@@ -72,6 +91,38 @@ def get_bounds(data):
     return bounds
 
 
+def prepare_data(data, target, sens):
+    """
+    Prepares the data to have the robustness measured
+    :param data: Input data frame
+    :param target: Output data frame
+    :param sens: Sensitive feature label
+    :return: the original input data standardised with the sensitive feature removed, the original target data as
+    numeric values, the sensitive data, the upper and lower bounds of each feature.
+    """
+
+    # split data into discrete features and continuous features
+    dis_labels, cont_labels, cat = get_data_type(data)
+
+    # standardise the data set (discrete data is numeric, continuous has mean 0 and variance 1)
+    data = standardise_data(data, dis_labels, cont_labels)
+
+    # save sensitive feature column and remove it from the data set, including from the categories list
+    headers = list(data.columns)
+    sens_index = headers.index(sens)
+    del cat[sens_index]
+    sensitive = data[sens]
+    data = data.drop(sens, axis=1)
+
+    # define the upper and lower bound of each feature column
+    bounds = get_bounds(data)
+
+    # standardise the target data
+    target = target.astype('category').cat.codes
+
+    return data.values, target.values, {sens: sensitive.values}, cat, bounds
+
+
 def fetch_adult_data():
     """
     Gets the adult income data set from the fairlearn package and returns it as standardised data
@@ -83,23 +134,10 @@ def fetch_adult_data():
     # get the data set as a data frame
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
 
-    # split data into discrete features and continuous features
-    dis_labels, cont_labels, cat = get_data_type(data)
+    # process the data in preperation to measure the robustness
+    data, target, sensitive, cat, bounds = prepare_data(data, target, 'sex')
 
-    # standardise the data set (discrete data is numeric, continuous has mean 0, variance 1)
-    data = standardise_data(data, dis_labels, cont_labels)
-
-    # save sensitive feature column and remove it from the data set
-    sensitive = data['sex']
-    data = data.drop('sex', axis=1)
-
-    # define the upper and lower bound of each feature column
-    bounds = get_bounds(data)
-
-    # standardise the target data
-    target = target.astype('category').cat.codes
-
-    return data.values, target.values, {'sex': sensitive.values}, cat, bounds
+    return data, target, sensitive, cat, bounds
 
 
 if __name__ == '__main__':
