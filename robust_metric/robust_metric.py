@@ -186,7 +186,7 @@ class RobustMetric:
 
         # get score of the in-processing model with the testing data
         output = self.inprocessing_model.predict(self.x_te, random_state=random_state)
-        score = accuracy_score(self.y_te, output)
+        score = 1 - np.mean(np.abs(output - self.y_te))
 
         return score
 
@@ -210,6 +210,6 @@ class RobustMetric:
 
         # get score of the post-processing model with the testing data
         output = self.postprocessing_model.predict(self.x_te, sensitive_features=self.sens_te)
-        score = accuracy_score(self.y_te, output)
+        score = 1 - np.mean(np.abs(output - self.y_te))
 
         return score
