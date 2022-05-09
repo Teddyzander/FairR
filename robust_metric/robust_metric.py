@@ -103,7 +103,7 @@ class RobustMetric:
         """
         self.max_iter = new_max_iter
 
-    def split_data(self, ratio=0.7, seed=666):
+    def split_data(self, ratio=0.7, seed=123):
         """
         splits the data into a training data set and a testing data set and saves them to the instance
         :param ratio: ratio of the split (eg 0.7 is 70% training, 30% testing)
@@ -165,7 +165,7 @@ class RobustMetric:
 
         return score
 
-    def run_inprocessing(self, eps=0.01, nu=1e-6, random_state=666):
+    def run_inprocessing(self, eps=0.01, nu=1e-6, random_state=123):
         """
         Run the in-processing optimisation with a fairness constraint
         :param random_state: psuedo-random seed to repeat experiments
