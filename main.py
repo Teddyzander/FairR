@@ -4,5 +4,6 @@ import data_util.fetch_data as data_util
 
 if __name__ == '__main__':
     test = RobustMetric()
-    print(test.data)
+    test.problem_summary()
+    test.split_data()
     test.problem_summary()

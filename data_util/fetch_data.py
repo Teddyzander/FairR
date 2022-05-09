@@ -1,5 +1,24 @@
 import numpy as np
 from fairlearn.datasets import fetch_adult
+from sklearn.model_selection import train_test_split
+
+
+def split(data, target, sensitive, ratio=0.7, seed=666, sens_name='sex'):
+    """
+    Splits the data into training data and testing data
+    :param data: input data
+    :param target: target data
+    :param sensitive: sensitive data
+    :param ratio: ratio of data split (eg 0.7 is 70% training, 30% testing)
+    :param seed: set pseudo-random seed so experiments can be repeated with same test/train split
+    :param sens_name: name of sensitive label
+    :return: x_tr is the training input, y_tr is the testing output, sens_tr is the training sensitive data input,
+    x_te is the testing input, y_te is the testing output, sens_te is the testing sensitive data input
+    """
+
+    sens = sensitive[sens_name]
+    x_tr, x_te, y_tr, y_te, sens_tr, sens_te = train_test_split(data, target, sens, train_size=ratio, random_state=seed)
+    return x_tr, y_tr, sens_tr, x_te, y_te, sens_te
 
 
 def get_data_type(data):

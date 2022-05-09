@@ -5,7 +5,7 @@ from fairlearn.reductions import DemographicParity
 
 class RobustMetric:
     """
-    Holds methods and instances for analysising the robustness of a data set for a certain optimisation problem
+    Holds methods and instances for analysing the robustness of a data set for a certain optimisation problem
     with a particular fairness metric
     """
 
@@ -20,10 +20,8 @@ class RobustMetric:
         :param fairness_constraint: The fairness constraint, which can be handed to the optimisation problem
         """
         if data is None and target is None and sens is None:
-            print("fetching adult data...")
             self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.fetch_adult_data()
         else:
-            print("processing data inputted data...")
             self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.prepare_data(data, target, sens)
 
         if model == 'SVC':
@@ -32,7 +30,14 @@ class RobustMetric:
 
         if fairness_constraint == 'DP':
             self.fairness_constraint = 'Demographic Parity'
-            self.fairness_constraint_func = DemographicParity()
+            self.fairness_constraint_func = DemographicParity
+
+        self.x_tr = []
+        self.y_tr = []
+        self.sens_tr = []
+        self.x_te = []
+        self.y_te = []
+        self.sens_te = []
 
     def problem_summary(self):
         """
@@ -41,3 +46,19 @@ class RobustMetric:
         """
         print('Learning model: ' + self.model)
         print('Fairness constraint: ' + self.fairness_constraint)
+        if len(self.x_tr) == 0:
+            print('Data is not split')
+        else:
+            print('Data is split')
+
+    def split_data(self, ratio=0.7, seed=666):
+
+        sens_key, sens_value = list(self.sensitive.items())[0]
+        self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
+            data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
+
+    def run_baseline(self):
+        """
+        Creates the baseline model
+        :return:
+        """
