@@ -13,7 +13,7 @@ class RobustMetric:
     with a particular fairness metric
     """
 
-    def __init__(self, data=None, target=None, sens=None, model_type='SVC',
+    def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
                  fairness_constraint='dp', max_iter=1000):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
@@ -30,9 +30,9 @@ class RobustMetric:
         self.max_iter = max_iter
 
         # if there is no defined data, fetch the adult data set
-        if data is None and target is None and sens is None:
+        if data is None and target is None:
             print('No data defined, fetching the ACSIncome data set')
-            self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.fetch_adult_data()
+            self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.fetch_adult_data(sens=sens)
         else:
             self.data, self.target, self.sensitive, self.cat, self.bounds = data_util.prepare_data(data, target, sens)
 

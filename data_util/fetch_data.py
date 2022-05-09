@@ -123,7 +123,7 @@ def prepare_data(data, target, sens):
     return data.values, target.values, {sens: sensitive.values}, cat, bounds
 
 
-def fetch_adult_data():
+def fetch_adult_data(sens='sex'):
     """
     Gets the adult income data set from the fairlearn package and returns it as standardised data
 
@@ -135,7 +135,7 @@ def fetch_adult_data():
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
 
     # process the data in preperation to measure the robustness
-    data, target, sensitive, cat, bounds = prepare_data(data, target, 'sex')
+    data, target, sensitive, cat, bounds = prepare_data(data, target, sens)
 
     return data, target, sensitive, cat, bounds
 
