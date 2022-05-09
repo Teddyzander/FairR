@@ -67,7 +67,7 @@ class RobustMetric:
         self.preprocessing_model = None
         self.postprocessing_model = None
 
-    def problem_summary(self):
+    def summary(self):
         """
         Shows summary of the instance's settings
         :return: Nothing

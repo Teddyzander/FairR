@@ -16,4 +16,4 @@ if __name__ == '__main__':
     print('In-processing score: ' + str(score_in))
     print('Post-processing score: ' + str(score_post))
 
-    test.problem_summary()
+    test.summary()
