@@ -51,7 +51,7 @@ class RobustMetric:
         if fairness_constraint == 'eo':
             self.fairness_constraint = 'equalized_odds'
             self.fairness_constraint_full = 'Equalized Odds'
-            self.fairness_constraint_func = EqualizedOdds
+            self.fairness_constraint_func = EqualizedOdds()
 
         # define empty lists for training and testing data across inputs, outputs, and sensitive data
         self.x_tr = []
@@ -74,19 +74,24 @@ class RobustMetric:
         """
 
         print('\n---- SUMMARY OF ROBUSTNESS SETTINGS AND DATA ----\n')
+
+        # Check settings for the class instance
         print('Learning Model: {}'.format(self.model_type))
         print('Fairness Constraint: {}'.format(self.fairness_constraint_full))
+        print('Sensitive Feature: {}'.format(list(self.sensitive.keys())[0]))
         print('Maximum number of iterations: {}'.format(self.max_iter))
 
+        # Check to see if the data has been separated into training and testing
         if len(self.x_tr) == 0:
             print('Data: not split into training and testing batches')
         else:
             print('Data: split into training and testing batches')
 
+        # Check if models exist
         print('Baseline Model: {}'.format(self.baseline_model))
-        print('Preprocessing Model: {}'.format(self.preprocessing_model))
-        print('Inprocessing Model: {}'.format(self.inprocessing_model))
-        print('Postprcessing Model: {}'.format(self.postprocessing_model))
+        print('Pre-processing Model: {}'.format(self.preprocessing_model))
+        print('In-processing Model: {}'.format(CorrelationRemover) + ' with {}'.format(self.inprocessing_model))
+        print('Post-processing Model: {}'.format(self.postprocessing_model))
 
         print('\n_________________________________________________')
 
@@ -135,6 +140,7 @@ class RobustMetric:
         to the sensitive features
         :return: The preprocessing score, which represents the prediction accuracy on the testing data
         """
+
         print('Fitting pre-processing model...')
 
         # Before removing the correlation, we need to stitch the data back together so that we have access to the
@@ -161,7 +167,7 @@ class RobustMetric:
 
     def run_inprocessing(self, eps=0.01, nu=1e-6, random_state=666):
         """
-        Run the in-prcessing optimisation with a fairness constraint
+        Run the in-processing optimisation with a fairness constraint
         :param random_state: psuedo-random seed to repeat experiments
         :param eps: Float for the allowed fairness violation
         :param nu: Float for convergence threshold
@@ -185,6 +191,13 @@ class RobustMetric:
         return score
 
     def run_postprocessing(self):
+        """
+        Runs the post-processing model, adjusting the threshold of the baseline model in order to optimise for the
+        fairness constraint. Must run baseline first
+        :return: The post-processing score, which represents the prediction accuracy on the testing data
+        """
+
+        print('Fitting post-processing model...')
 
         # define post-processing model
         self.postprocessing_model = ThresholdOptimizer(

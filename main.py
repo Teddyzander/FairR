@@ -4,7 +4,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
-    test = RobustMetric(max_iter=1000)
+    test = RobustMetric(max_iter=5, fairness_constraint='dp')
     test.split_data()
     score_base = test.run_baseline()
     score_pre = test.run_preprocessing()
