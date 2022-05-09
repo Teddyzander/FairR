@@ -1,6 +1,6 @@
 import data_util.fetch_data as data_util
 from sklearn.svm import SVC
-from fairlearn.reductions import DemographicParity, EqualizedOdds
+from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
 
 
 class RobustMetric:
@@ -21,6 +21,9 @@ class RobustMetric:
         :param max_iter: Maximum number of iterations that should be run when training the models
         """
 
+        # save number of maximum number of iterations for optimisation problems
+        self.max_iter = max_iter
+
         # if there is no defined data, fetch the adult data set
         if data is None and target is None and sens is None:
             print('No data defined, fetching the ACSIncome data set')
@@ -30,14 +33,14 @@ class RobustMetric:
 
         # define the optimisation method to be used
         self.model_type = 'Support Vector Classification (SVC)'
-        model = SVC
+        self.model = SVC
 
         if model_type != 'SVC':
             print('Model not included')
 
         # define fairness constraint to be used
         self.fairness_constraint = 'Demographic Parity'
-        self.fairness_constraint_func = DemographicParity
+        self.fairness_constraint_func = DemographicParity()
 
         if fairness_constraint == 'EO':
             self.fairness_constraint = 'Equalized Odds'
@@ -52,7 +55,8 @@ class RobustMetric:
         self.sens_te = []
 
         # define variable to hold the different models
-        self.baseline_model = model(max_iter=max_iter)
+        self.baseline_model = None
+        self.inprocessing_model = None
 
     def problem_summary(self):
         """
@@ -63,11 +67,20 @@ class RobustMetric:
         print("\n---- SUMMARY OF ROBUSTNESS SETTINGS AND DATA ----\n")
         print('Learning Model: {}'.format(self.model_type))
         print('Fairness Constraint: {}'.format(self.fairness_constraint))
+        print('Maximum number of iterations: {}'.format(self.max_iter))
         if len(self.x_tr) == 0:
             print('Data: not split into training and testing batches')
         else:
             print('Data: split into training and testing batches')
         print("\n_________________________________________________")
+
+    def change_max_iter(self, new_max_iter):
+        """
+        Change the maximum number of iterations for the optimisation problems
+        :param new_max_iter: new max iterations setting
+        :return: Nothing
+        """
+        self.max_iter = new_max_iter
 
     def split_data(self, ratio=0.7, seed=666):
         """
@@ -83,17 +96,40 @@ class RobustMetric:
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
 
-    def run_baseline(self, max_iter=1000):
+    def run_baseline(self):
         """
         Creates the baseline model
-        :param max_iter: maximum number of iterations used to fit the model
-        :return: the baseline model and the baseline model score
+        :return: The baseline score, which represents the prediction accuracy on the testing data
         """
 
+        print('Fitting baseline model...')
         # run the model with the training data
+        self.baseline_model = self.model(max_iter=self.max_iter)
         self.baseline_model.fit(self.x_tr, self.y_tr)
 
         # get score of the baseline model with the testing data
         score = self.baseline_model.score(self.x_te, self.y_te)
+
+        return score
+
+    def run_inprocessing(self, eps=0.01, nu=1e-6):
+        """
+        Run the in-prcessing optimisation with a fairness constraint
+        :param eps: Float for the allowed fairness violation
+        :param nu: Float for convergence threshold
+        :return: The in-processing score, which represents the prediction accuracy on the testing data
+        """
+        print('Fitting in-processing model...')
+
+        # define the model
+        self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
+                                                        constraints=self.fairness_constraint_func,
+                                                        eps=eps, nu=nu)
+
+        # run the optimisation model for the defined parameters over the training dataset
+        self.inprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
+
+        # get score of the in processing model with the testing data
+        score = self.inprocessing_model.predict(self.x_te, random_state=666)
 
         return score

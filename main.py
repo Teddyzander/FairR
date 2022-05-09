@@ -5,9 +5,9 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
     test = RobustMetric()
-    test.problem_summary()
     test.split_data()
-    test.problem_summary()
-    score = test.run_baseline()
+    score_base = test.run_baseline()
+    score_in = test.run_inprocessing()
 
-    print(score)
+    print(score_base)
+    print(score_in)
