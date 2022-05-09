@@ -1,4 +1,5 @@
 import data_util.fetch_data as data_util
+import numpy as np
 from sklearn.svm import SVC
 from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
 
@@ -112,9 +113,10 @@ class RobustMetric:
 
         return score
 
-    def run_inprocessing(self, eps=0.01, nu=1e-6):
+    def run_inprocessing(self, eps=0.01, nu=1e-6, random_state=666):
         """
         Run the in-prcessing optimisation with a fairness constraint
+        :param random_state: psuedo-random seed to repeat experiments
         :param eps: Float for the allowed fairness violation
         :param nu: Float for convergence threshold
         :return: The in-processing score, which represents the prediction accuracy on the testing data
@@ -130,6 +132,7 @@ class RobustMetric:
         self.inprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
 
         # get score of the in processing model with the testing data
-        score = self.inprocessing_model.predict(self.x_te, random_state=666)
+        score = 1 - (np.sum(np.abs(self.inprocessing_model.predict(self.x_te, random_state=random_state)
+                                   - self.y_te)) / len(self.y_te))
 
         return score
