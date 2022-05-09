@@ -9,14 +9,14 @@ class RobustMetric:
     with a particular fairness metric
     """
 
-    def __init__(self, data=None, target=None, sens=None, model='SVC', fairness_constraint='DP', max_iter=1000):
+    def __init__(self, data=None, target=None, sens=None, model_type='SVC', fairness_constraint='DP', max_iter=1000):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
         :param data: The training input dataframe
         :param target: The target output dataframe that corresponds to the input data
         :param sens: The label (as a string) containing the name of the header for the sensitive data column
-        :param model: Learning model wanted
+        :param model_type: Learning model wanted
         :param fairness_constraint: The fairness constraint, which can be handed to the optimisation problem
         :param max_iter: Maximum number of iterations that should be run when training the models
         """
@@ -32,7 +32,7 @@ class RobustMetric:
         self.model_type = 'Support Vector Classification (SVC)'
         model = SVC
 
-        if model != 'SVC':
+        if model_type != 'SVC':
             print('Model not included')
 
         # define fairness constraint to be used
