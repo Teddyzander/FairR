@@ -89,8 +89,8 @@ class RobustMetric:
 
         # Check if models exist
         print('Baseline Model: {}'.format(self.baseline_model))
-        print('Pre-processing Model: {}'.format(self.preprocessing_model))
-        print('In-processing Model: {}'.format(CorrelationRemover) + ' with {}'.format(self.inprocessing_model))
+        print('Pre-processing Model: {}'.format(CorrelationRemover) + ' with {}'.format(self.preprocessing_model))
+        print('In-processing Model: {}'.format(self.inprocessing_model))
         print('Post-processing Model: {}'.format(self.postprocessing_model))
 
         print('\n_________________________________________________')
