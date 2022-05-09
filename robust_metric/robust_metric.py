@@ -1,6 +1,8 @@
 import data_util.fetch_data as data_util
 import numpy as np
 from sklearn.svm import SVC
+from fairlearn.postprocessing import ThresholdOptimizer
+from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
 
 
@@ -58,6 +60,7 @@ class RobustMetric:
         # define variable to hold the different models
         self.baseline_model = None
         self.inprocessing_model = None
+        self.preprocessing_model = None
 
     def problem_summary(self):
         """
@@ -65,15 +68,21 @@ class RobustMetric:
         :return: Nothing
         """
 
-        print("\n---- SUMMARY OF ROBUSTNESS SETTINGS AND DATA ----\n")
+        print('\n---- SUMMARY OF ROBUSTNESS SETTINGS AND DATA ----\n')
         print('Learning Model: {}'.format(self.model_type))
         print('Fairness Constraint: {}'.format(self.fairness_constraint))
         print('Maximum number of iterations: {}'.format(self.max_iter))
+
         if len(self.x_tr) == 0:
             print('Data: not split into training and testing batches')
         else:
             print('Data: split into training and testing batches')
-        print("\n_________________________________________________")
+
+        print('Baseline Model: {}'.format(self.baseline_model))
+        print('Preprocessing Model: {}'.format(self.preprocessing_model))
+        print('Inprocessing Model: {}'.format(self.inprocessing_model))
+
+        print('\n_________________________________________________')
 
     def change_max_iter(self, new_max_iter):
         """
@@ -104,12 +113,43 @@ class RobustMetric:
         """
 
         print('Fitting baseline model...')
+
         # run the model with the training data
         self.baseline_model = self.model(max_iter=self.max_iter)
         self.baseline_model.fit(self.x_tr, self.y_tr)
 
         # get score of the baseline model with the testing data
         score = self.baseline_model.score(self.x_te, self.y_te)
+
+        return score
+
+    def run_preprocessing(self):
+        """
+        Creates the preprocessing model by applying a linear transformation on the data to remove the correlation
+        to the sensitive features
+        :return: The preprocessing score, which represents the prediction accuracy on the testing data
+        """
+        print('Fitting pre-processing model...')
+
+        # Before removing the correlation, we need to stitch the data back together so that we have access to the
+        # sensitive data (which is stored as the last column)
+        x_tr_pre = np.concatenate([self.x_tr, self.sens_tr.reshape(-1, 1)], axis=1)
+        x_te_pre = np.concatenate([self.x_te, self.sens_te.reshape(-1, 1)], axis=1)
+
+        # Now we can find a linear transformation that removes the correlation to the sensitive features
+        remover = CorrelationRemover(sensitive_feature_ids=[x_tr_pre.shape[1] - 1])
+        remover.fit(x_tr_pre, self.y_tr)
+
+        # Apply the transformation to the training and testing data
+        x_tr_pre = remover.transform(x_tr_pre)
+        x_te_pre = remover.transform(x_te_pre)
+
+        # fit the model on the preprocessed data
+        self.preprocessing_model = self.model(max_iter=self.max_iter)
+        self.preprocessing_model.fit(x_tr_pre, self.y_tr)
+
+        # get score of the  pre-processing model with the testing data
+        score = self.baseline_model.score(x_te_pre, self.y_te)
 
         return score
 
@@ -121,6 +161,7 @@ class RobustMetric:
         :param nu: Float for convergence threshold
         :return: The in-processing score, which represents the prediction accuracy on the testing data
         """
+
         print('Fitting in-processing model...')
 
         # define the model

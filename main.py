@@ -8,7 +8,10 @@ if __name__ == '__main__':
     test.split_data()
     test.problem_summary()
     score_base = test.run_baseline()
-    score_in = test.run_inprocessing()
+    # score_in = test.run_inprocessing()
+    score_pre = test.run_preprocessing()
 
     print(score_base)
-    print(score_in)
+    print(score_pre)
+
+    test.problem_summary()
