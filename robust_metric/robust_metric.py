@@ -14,7 +14,7 @@ class RobustMetric:
     """
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
-                 fairness_constraint='dp', max_iter=1000):
+                 fairness_constraint='dp', max_iter=1000, noise_level=[1]):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -24,10 +24,15 @@ class RobustMetric:
         :param model_type: Learning model wanted
         :param fairness_constraint: The fairness constraint, which can be handed to the optimisation problem
         :param max_iter: Maximum number of iterations that should be run when training the models
+        :param noise_level: list of levels of which noisy data should vary
         """
 
         # save number of maximum number of iterations for optimisation problems
         self.max_iter = max_iter
+        # save noise levels for robustness measure
+        self.noise_level = noise_level
+        # preallocate memory to store noisy data
+        self.x_noise = [None] * len(noise_level)
 
         # if there is no defined data, fetch the adult data set
         if data is None and target is None:

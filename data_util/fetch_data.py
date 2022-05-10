@@ -163,8 +163,6 @@ def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
     for n in range(0, iter):
         # make copies of the data inputs
         x = data.copy()
-        s = sens.copy()
-        y = target.copy()
 
         # use laplacian noise with mean 0 and specified noise level to add noise to continuous data
         x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
@@ -180,9 +178,11 @@ def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
 
         x_noise[n] = x
 
-    print('okay')
+    return x_noise
 
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    add_noise(data, sens['sex'], target, cat, bounds, iter=10, level=0.1)
+    data_noise = add_noise(data, sens['sex'], target, cat, bounds, iter=10, level=0.1)
+
+    print('test done')
