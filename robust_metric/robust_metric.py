@@ -150,7 +150,7 @@ class RobustMetric:
         :return: The preprocessing score, which represents the prediction accuracy on the testing data
         """
 
-        print('Fitting pre-processing model...')
+        print('Fitting pre-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # Before removing the correlation, we need to stitch the data back together so that we have access to the
         # sensitive data (which is stored as the last column)
@@ -183,7 +183,7 @@ class RobustMetric:
         :return: The in-processing score, which represents the prediction accuracy on the testing data
         """
 
-        print('Fitting in-processing model...')
+        print('Fitting in-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # define the model
         self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
@@ -206,7 +206,7 @@ class RobustMetric:
         :return: The post-processing score, which represents the prediction accuracy on the testing data
         """
 
-        print('Fitting post-processing model...')
+        print('Fitting post-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # define post-processing model
         self.postprocessing_model = ThresholdOptimizer(
