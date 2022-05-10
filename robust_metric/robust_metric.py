@@ -5,7 +5,8 @@ from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity,\
     ExponentiatedGradient
-
+from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference, true_positive_rate, \
+    false_positive_rate
 
 class RobustMetric:
     """
@@ -14,7 +15,7 @@ class RobustMetric:
     """
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
-                 fairness_constraint='dp', max_iter=1000, noise_level=[1]):
+                 fairness_constraint='dp', max_iter=1000, noise_level=[1], noise_iter=1):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -29,6 +30,8 @@ class RobustMetric:
 
         # save number of maximum number of iterations for optimisation problems
         self.max_iter = max_iter
+        # save number of times we run each noise level
+        self.noise_iter = noise_iter
         # save noise levels for robustness measure
         self.noise_level = noise_level
         # preallocate memory to store noisy data
@@ -109,13 +112,16 @@ class RobustMetric:
 
         print('\n_________________________________________________')
 
-    def change_max_iter(self, new_max_iter):
+    def change_settings(self, new_max_iter=1000, new_noise_iter=10):
         """
         Change the maximum number of iterations for the optimisation problems
-        :param new_max_iter: new max iterations setting
+        :param new_noise_iter: new number of iterations we should run for each noise level
+        :param new_max_iter: new max iterations setting for optimisation
         :return: Nothing
         """
         self.max_iter = new_max_iter
+        self.noise_iter = new_noise_iter
+
 
     def split_data(self, ratio=0.7, seed=123):
         """
@@ -131,7 +137,7 @@ class RobustMetric:
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
 
-    def gen_noise(self, iter=10):
+    def gen_noise(self):
         """
         Generate the noisy data for each noise level. x_noise is a list of lists, saved to the object.
         For exmaple, x_noise[a][b] contains the bth run with a noise level of noise_level[a]
@@ -139,7 +145,10 @@ class RobustMetric:
         :return: Nothing
         """
         for level in range(len(self.noise_level)):
-            self.x_noise[level] = data_util.add_noise(self.x_tr, self.cat, self.bounds, iter, self.noise_level[level])
+            self.x_noise[level] = data_util.add_noise(self.x_tr, self.cat, self.bounds, self.noise_iter,
+                                                      self.noise_level[level])
+
+
 
     def run_baseline(self):
         """
@@ -237,3 +246,10 @@ class RobustMetric:
         score = 1 - np.mean(np.abs(output - self.y_te))
 
         return score
+
+    def measure_fairness(self):
+
+        fairness = np.zeros((len(self.noise_level, self.iter)))
+
+        if self.fairness_constraint == 'dp':
+            demographic_parity_difference()
