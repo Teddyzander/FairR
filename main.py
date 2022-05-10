@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
-    test = RobustMetric(data=data, target=target, sens='sex', max_iter=1000, fairness_constraint='dp')
+    test = RobustMetric(data=data, target=target, sens='sex', max_iter=5, fairness_constraint='dp')
     test.split_data()
     score_base = test.run_baseline()
     score_pre = test.run_preprocessing()

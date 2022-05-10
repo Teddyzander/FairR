@@ -3,7 +3,8 @@ import numpy as np
 from sklearn.svm import SVC
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
-from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
+from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity,\
+    ExponentiatedGradient
 
 
 class RobustMetric:
@@ -51,6 +52,15 @@ class RobustMetric:
             self.fairness_constraint = 'equalized_odds'
             self.fairness_constraint_full = 'Equalized Odds'
             self.fairness_constraint_func = EqualizedOdds()
+        elif fairness_constraint == 'tp':
+            self.fairness_constraint = 'true_positive_rate_parity'
+            self.fairness_constraint_full = 'True Positive Rate Parity'
+            self.fairness_constraint_func = TruePositiveRateParity()
+
+        elif fairness_constraint == 'fp':
+            self.fairness_constraint = 'false_positive_rate_parity'
+            self.fairness_constraint_full = 'False Positive Rare Parity'
+            self.fairness_constraint_func = FalsePositiveRateParity()
 
         # define empty lists for training and testing data across inputs, outputs, and sensitive data
         self.x_tr = []
