@@ -139,7 +139,7 @@ class RobustMetric:
         :return: Nothing
         """
         for level in range(len(self.noise_level)):
-            self.x_noise[level] = data_util.add_noise(self.data, self.cat, self.bounds, iter, self.noise_level[level])
+            self.x_noise[level] = data_util.add_noise(self.x_tr, self.cat, self.bounds, iter, self.noise_level[level])
 
     def run_baseline(self):
         """
