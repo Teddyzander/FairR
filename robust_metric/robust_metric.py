@@ -56,6 +56,7 @@ class RobustMetric:
         self.fairness_constraint = 'demographic_parity'
         self.fairness_constraint_full = 'Demographic Parity'
         self.fairness_constraint_func = DemographicParity()
+        self.fairness_constraint_metric = demographic_parity_difference
 
         if fairness_constraint == 'eo':
             self.fairness_constraint = 'equalized_odds'
@@ -146,7 +147,7 @@ class RobustMetric:
         :return: Nothing
         """
         for level in range(len(self.noise_level)):
-            self.x_noise[level] = data_util.add_noise(self.x_tr, self.cat, self.bounds, self.noise_iter,
+            self.x_noise[level] = data_util.add_noise(self.x_te, self.cat, self.bounds, self.noise_iter,
                                                       self.noise_level[level])
 
     def run_baseline(self):
@@ -246,29 +247,44 @@ class RobustMetric:
 
         return score
 
-    def measure_fairness(self):
+    def measure_fairness(self, data, target, sens):
+
+        # check fairness of baseline model
+        baseline_output = self.baseline_model.predict(data)
+        base_fairness = self.fairness_constraint_metric(target, baseline_output,
+                                                        sensitive_features=sens)
+        # check fairness of pre-processing model
+        x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
+        x_pre = self.preprocess.transform(x_pre)
+        preprocess_output = self.preprocessing_model.predict(x_pre)
+        pre_fairness = self.fairness_constraint_metric(target, preprocess_output,
+                                                       sensitive_features=sens)
+        # check fairness of in-processing model
+        inprocess_output = self.inprocessing_model.predict(data)
+        in_fairness = self.fairness_constraint_metric(target, inprocess_output,
+                                                      sensitive_features=sens)
+        # check fairness of post-processing model
+        postprocess_output = self.postprocessing_model.predict(data, sensitive_features=sens)
+        post_fairness = self.fairness_constraint_metric(target, postprocess_output,
+                                                        sensitive_features=sens)
+
+        return base_fairness, pre_fairness, in_fairness, post_fairness
+
+    def measure_total_fairness(self):
 
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
-        if self.fairness_constraint == 'demographic_parity':
-            # check fairness of baseline model
-            baseline_output = self.baseline_model.predict(self.x_te)
-            fairness[0, 0, :] = demographic_parity_difference(self.y_te, baseline_output,
-                                                              sensitive_features=self.sens_te)
-            # check fairness of pre-processing model
-            x_pre = np.concatenate([self.x_te, self.sens_te.reshape(-1, 1)], axis=1)
-            x_pre = self.preprocess.transform(x_pre)
-            preprocess_output = self.preprocessing_model.predict(x_pre)
-            fairness[1][0, :] = demographic_parity_difference(self.y_te, preprocess_output,
-                                                              sensitive_features=self.sens_te)
-            # check fairness of in-processing model
-            inprocess_output = self.inprocessing_model.predict(self.x_te)
-            fairness[2][0, :] = demographic_parity_difference(self.y_te, inprocess_output,
-                                                              sensitive_features=self.sens_te)
-            # check fairness of post-processing model
-            postprocess_output = self.postprocessing_model.predict(self.x_te, sensitive_features=self.sens_te)
-            fairness[3][0, :] = demographic_parity_difference(self.y_te, postprocess_output,
-                                                              sensitive_features=self.sens_te)
+
+        x_full = [self.x_te] + self.x_noise
+
+        # measure the fairness of the noiseless data set
+        fairness[0, 0, :], fairness[1, 0, :], \
+        fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(x_full[0], self.y_te, self.sens_te)
+
+        # check fairness of each noise_level data set against each model
+        for i in range(1, len(self.noise_level) + 1):
+            for j in range(0, self.noise_iter):
+                fairness[0, i, j], fairness[1, i, j], \
+                fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_full[i][j], self.y_te, self.sens_te)
 
         return fairness
-

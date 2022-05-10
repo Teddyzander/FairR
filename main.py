@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
-    test = RobustMetric(data=data, target=target, sens='sex', max_iter=10000, fairness_constraint='dp',
+    test = RobustMetric(data=data, target=target, sens='sex', max_iter=5, fairness_constraint='dp',
                         noise_level=[0.1, 0.5, 1, 2], noise_iter=10)
     test.split_data()
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     score_in = test.run_inprocessing()
     score_post = test.run_postprocessing()
 
-    fairness = test.measure_fairness()
+    fairness = test.measure_total_fairness()
 
     print('Baseline accuracy score: ' + str(score_base))
     print('Pre-processing accuracy score: ' + str(score_pre))

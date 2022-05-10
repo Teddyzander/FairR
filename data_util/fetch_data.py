@@ -188,7 +188,7 @@ def add_noise(data, cat, bounds, iter=10, level=1):
 
         x_noise[n] = x
 
-    return x_noise
+    return np.asarray(x_noise)
 
 
 if __name__ == '__main__':
