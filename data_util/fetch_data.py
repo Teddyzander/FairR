@@ -146,6 +146,7 @@ def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
     con_index = [None] * cat.count('c')
     dis_index = [None] * cat.count('d')
 
+    # Find indices of discrete and continuous data
     con_index_count = 0
     dis_index_count = 0
     for index in range(0, len(cat)):
@@ -157,8 +158,6 @@ def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
             dis_index_count += 1
 
     # preallocate memory space to store the noisy data
-    x_noise = [None] * iter
-    y_noise = [None] * iter
     x_noise = [None] * iter
 
     for n in range(0, iter):
@@ -179,10 +178,11 @@ def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
             possible_values = np.arange(bounds[index][0], bounds[index][1] + 1)
             x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)
 
-        print('okay')
+        x_noise[n] = x
 
+    print('okay')
 
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    add_noise(data, sens['sex'], target, cat, bounds, iter=10, level=20)
+    add_noise(data, sens['sex'], target, cat, bounds, iter=10, level=0.1)
