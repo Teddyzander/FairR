@@ -14,7 +14,7 @@ class RobustMetric:
     """
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
-                 fairness_constraint='dp', max_iter=1000):
+                 fairness_constraint='dp', max_iter=1000, noise_level=[1]):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -24,10 +24,15 @@ class RobustMetric:
         :param model_type: Learning model wanted
         :param fairness_constraint: The fairness constraint, which can be handed to the optimisation problem
         :param max_iter: Maximum number of iterations that should be run when training the models
+        :param noise_level: list of levels of which noisy data should vary
         """
 
         # save number of maximum number of iterations for optimisation problems
         self.max_iter = max_iter
+        # save noise levels for robustness measure
+        self.noise_level = noise_level
+        # preallocate memory to store noisy data
+        self.x_noise = [None] * len(noise_level)
 
         # if there is no defined data, fetch the adult data set
         if data is None and target is None:
@@ -126,6 +131,16 @@ class RobustMetric:
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
 
+    def gen_noise(self, iter=10):
+        """
+        Generate the noisy data for each noise level. x_noise is a list of lists, saved to the object.
+        For exmaple, x_noise[a][b] contains the bth run with a noise level of noise_level[a]
+        :param iter: number of iterations that should be run for each noise level
+        :return: Nothing
+        """
+        for level in range(len(self.noise_level)):
+            self.x_noise[level] = data_util.add_noise(self.data, self.cat, self.bounds, iter, self.noise_level[level])
+
     def run_baseline(self):
         """
         Creates the baseline model
@@ -150,7 +165,7 @@ class RobustMetric:
         :return: The preprocessing score, which represents the prediction accuracy on the testing data
         """
 
-        print('Fitting pre-processing model...')
+        print('Fitting pre-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # Before removing the correlation, we need to stitch the data back together so that we have access to the
         # sensitive data (which is stored as the last column)
@@ -183,7 +198,7 @@ class RobustMetric:
         :return: The in-processing score, which represents the prediction accuracy on the testing data
         """
 
-        print('Fitting in-processing model...')
+        print('Fitting in-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # define the model
         self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
@@ -206,7 +221,7 @@ class RobustMetric:
         :return: The post-processing score, which represents the prediction accuracy on the testing data
         """
 
-        print('Fitting post-processing model...')
+        print('Fitting post-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # define post-processing model
         self.postprocessing_model = ThresholdOptimizer(

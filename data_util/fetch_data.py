@@ -140,5 +140,59 @@ def fetch_adult_data(sens='sex'):
     return data, target, sensitive, cat, bounds
 
 
+def add_noise(data, cat, bounds, iter=10, level=1):
+    """
+    Adds noise to the input data. Continuous data has laplacian noise added with mean 0 and var=level. Discrete data
+    has level/len(data) of the values uniformly randomly selected from all possible values the variable could take
+    :param data: Input data
+    :param cat: category of data - [d] for discrete, [c] for continuous
+    :param bounds: the upper and lower bound of each feature
+    :param iter: Number of noisy instances we want with the selected level
+    :param level: noise level
+    :return: list of noisy data
+    """
+
+    # get indices of where continuous [c] data appears and discrete [d] data appears
+    con_index = [None] * cat.count('c')
+    dis_index = [None] * cat.count('d')
+
+    # Find indices of discrete and continuous data
+    con_index_count = 0
+    dis_index_count = 0
+    for index in range(0, len(cat)):
+        if cat[index] == 'c':
+            con_index[con_index_count] = index
+            con_index_count += 1
+        else:
+            dis_index[dis_index_count] = index
+            dis_index_count += 1
+
+    # preallocate memory space to store the noisy data
+    x_noise = [None] * iter
+
+    for n in range(0, iter):
+        # make copies of the data inputs
+        x = data.copy()
+
+        # use laplacian noise with mean 0 and specified noise level to add noise to continuous data
+        x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
+
+        # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
+        # a particular feature that will be randomly selected from a uniform distribution of all possible values
+        for index in dis_index:
+            num_of_changes = int(0.01 * level * len(x))
+            num_of_instances = np.arange(len(x))
+            change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
+            possible_values = np.arange(bounds[index][0], bounds[index][1] + 1)
+            x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)
+
+        x_noise[n] = x
+
+    return x_noise
+
+
 if __name__ == '__main__':
-    input, target, sens, cat, bounds = fetch_adult_data()
+    data, target, sens, cat, bounds = fetch_adult_data()
+    data_noise = add_noise(data, cat, bounds, iter=10, level=0.1)
+
+    print('test done')
