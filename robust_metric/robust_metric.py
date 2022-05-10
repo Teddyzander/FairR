@@ -1,10 +1,10 @@
 import data_util.fetch_data as data_util
 import numpy as np
 from sklearn.svm import SVC
-from sklearn.metrics._classification import accuracy_score
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
-from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
+from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity,\
+    ExponentiatedGradient
 
 
 class RobustMetric:
@@ -52,6 +52,15 @@ class RobustMetric:
             self.fairness_constraint = 'equalized_odds'
             self.fairness_constraint_full = 'Equalized Odds'
             self.fairness_constraint_func = EqualizedOdds()
+        elif fairness_constraint == 'tp':
+            self.fairness_constraint = 'true_positive_rate_parity'
+            self.fairness_constraint_full = 'True Positive Rate Parity'
+            self.fairness_constraint_func = TruePositiveRateParity()
+
+        elif fairness_constraint == 'fp':
+            self.fairness_constraint = 'false_positive_rate_parity'
+            self.fairness_constraint_full = 'False Positive Rate Parity'
+            self.fairness_constraint_func = FalsePositiveRateParity()
 
         # define empty lists for training and testing data across inputs, outputs, and sensitive data
         self.x_tr = []
@@ -103,7 +112,7 @@ class RobustMetric:
         """
         self.max_iter = new_max_iter
 
-    def split_data(self, ratio=0.7, seed=666):
+    def split_data(self, ratio=0.7, seed=123):
         """
         splits the data into a training data set and a testing data set and saves them to the instance
         :param ratio: ratio of the split (eg 0.7 is 70% training, 30% testing)
@@ -165,7 +174,7 @@ class RobustMetric:
 
         return score
 
-    def run_inprocessing(self, eps=0.01, nu=1e-6, random_state=666):
+    def run_inprocessing(self, eps=0.01, nu=1e-6, random_state=123):
         """
         Run the in-processing optimisation with a fairness constraint
         :param random_state: psuedo-random seed to repeat experiments
