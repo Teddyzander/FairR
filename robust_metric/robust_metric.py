@@ -193,7 +193,7 @@ class RobustMetric:
         self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
         # get score of the pre-processing model with the testing data
-        score = self.baseline_model.score(x_te_pre, self.y_te)
+        score = self.preprocessing_model.score(x_te_pre, self.y_te)
 
         return score
 
@@ -248,21 +248,27 @@ class RobustMetric:
 
     def measure_fairness(self):
 
+        # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
         if self.fairness_constraint == 'demographic_parity':
-            fairness[0, 0, :] = demographic_parity_difference(self.y_te, self.baseline_model.predict(self.x_te),
+            # check fairness of baseline model
+            baseline_output = self.baseline_model.predict(self.x_te)
+            fairness[0, 0, :] = demographic_parity_difference(self.y_te, baseline_output,
                                                               sensitive_features=self.sens_te)
+            # check fairness of pre-processing model
             x_pre = np.concatenate([self.x_te, self.sens_te.reshape(-1, 1)], axis=1)
             x_pre = self.preprocess.transform(x_pre)
-            fairness[1][0, :] = demographic_parity_difference(self.y_te, self.preprocessing_model.predict(self.x_te),
+            preprocess_output = self.preprocessing_model.predict(x_pre)
+            fairness[1][0, :] = demographic_parity_difference(self.y_te, preprocess_output,
                                                               sensitive_features=self.sens_te)
-            fairness[2][0, :] = demographic_parity_difference(self.y_te, self.inprocessing_model.predict(self.x_te),
+            # check fairness of in-processing model
+            inprocess_output = self.inprocessing_model.predict(self.x_te)
+            fairness[2][0, :] = demographic_parity_difference(self.y_te, inprocess_output,
                                                               sensitive_features=self.sens_te)
-            fairness[3][0, :] = demographic_parity_difference(self.y_te,
-                                                              self.postprocessing_model.predict(self.x_te,
-                                                                                                sensitive_features=
-                                                                                                self.sens_te),
+            # check fairness of post-processing model
+            postprocess_output = self.postprocessing_model.predict(self.x_te, sensitive_features=self.sens_te)
+            fairness[3][0, :] = demographic_parity_difference(self.y_te, postprocess_output,
                                                               sensitive_features=self.sens_te)
 
-        print('good')
+        return fairness
 
