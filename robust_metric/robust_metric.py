@@ -1,7 +1,6 @@
 import data_util.fetch_data as data_util
 import numpy as np
 from sklearn.svm import SVC
-from sklearn.metrics._classification import accuracy_score
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, ExponentiatedGradient
