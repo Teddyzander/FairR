@@ -59,7 +59,7 @@ class RobustMetric:
 
         elif fairness_constraint == 'fp':
             self.fairness_constraint = 'false_positive_rate_parity'
-            self.fairness_constraint_full = 'False Positive Rare Parity'
+            self.fairness_constraint_full = 'False Positive Rate Parity'
             self.fairness_constraint_func = FalsePositiveRateParity()
 
         # define empty lists for training and testing data across inputs, outputs, and sensitive data

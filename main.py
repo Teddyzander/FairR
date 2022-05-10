@@ -13,9 +13,9 @@ if __name__ == '__main__':
     score_in = test.run_inprocessing()
     score_post = test.run_postprocessing()
 
-    print('Baseline score: ' + str(score_base))
-    print('Pre-processing score: ' + str(score_pre))
-    print('In-processing score: ' + str(score_in))
-    print('Post-processing score: ' + str(score_post))
+    print('Baseline accuracy score: ' + str(score_base))
+    print('Pre-processing accuracy score: ' + str(score_pre))
+    print('In-processing accuracy score: ' + str(score_in))
+    print('Post-processing accuracy score: ' + str(score_post))
 
     test.summary()
