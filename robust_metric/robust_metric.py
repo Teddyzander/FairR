@@ -3,10 +3,11 @@ import numpy as np
 from sklearn.svm import SVC
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
-from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity,\
+from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity, \
     ExponentiatedGradient
 from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference, true_positive_rate, \
     false_positive_rate
+
 
 class RobustMetric:
     """
@@ -15,7 +16,7 @@ class RobustMetric:
     """
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
-                 fairness_constraint='dp', max_iter=1000, noise_level=[1], noise_iter=1):
+                 fairness_constraint='demographic_parity', max_iter=1000, noise_level=[1], noise_iter=1):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -80,6 +81,7 @@ class RobustMetric:
 
         # define variable to hold the different models
         self.baseline_model = None
+        self.preprocess = None
         self.inprocessing_model = None
         self.preprocessing_model = None
         self.postprocessing_model = None
@@ -122,7 +124,6 @@ class RobustMetric:
         self.max_iter = new_max_iter
         self.noise_iter = new_noise_iter
 
-
     def split_data(self, ratio=0.7, seed=123):
         """
         splits the data into a training data set and a testing data set and saves them to the instance
@@ -147,8 +148,6 @@ class RobustMetric:
         for level in range(len(self.noise_level)):
             self.x_noise[level] = data_util.add_noise(self.x_tr, self.cat, self.bounds, self.noise_iter,
                                                       self.noise_level[level])
-
-
 
     def run_baseline(self):
         """
@@ -182,12 +181,12 @@ class RobustMetric:
         x_te_pre = np.concatenate([self.x_te, self.sens_te.reshape(-1, 1)], axis=1)
 
         # Now we can find a linear transformation that removes the correlation to the sensitive features
-        remover = CorrelationRemover(sensitive_feature_ids=[x_tr_pre.shape[1] - 1])
-        remover.fit(x_tr_pre, self.y_tr)
+        self.preprocess = CorrelationRemover(sensitive_feature_ids=[x_tr_pre.shape[1] - 1])
+        self.preprocess.fit(x_tr_pre, self.y_tr)
 
         # Apply the transformation to the training and testing data
-        x_tr_pre = remover.transform(x_tr_pre)
-        x_te_pre = remover.transform(x_te_pre)
+        x_tr_pre = self.preprocess.transform(x_tr_pre)
+        x_te_pre = self.preprocess.transform(x_te_pre)
 
         # fit the model on the preprocessed data
         self.preprocessing_model = self.model(max_iter=self.max_iter)
@@ -249,7 +248,21 @@ class RobustMetric:
 
     def measure_fairness(self):
 
-        fairness = np.zeros((len(self.noise_level, self.iter)))
+        fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
+        if self.fairness_constraint == 'demographic_parity':
+            fairness[0, 0, :] = demographic_parity_difference(self.y_te, self.baseline_model.predict(self.x_te),
+                                                              sensitive_features=self.sens_te)
+            x_pre = np.concatenate([self.x_te, self.sens_te.reshape(-1, 1)], axis=1)
+            x_pre = self.preprocess.transform(x_pre)
+            fairness[1][0, :] = demographic_parity_difference(self.y_te, self.preprocessing_model.predict(self.x_te),
+                                                              sensitive_features=self.sens_te)
+            fairness[2][0, :] = demographic_parity_difference(self.y_te, self.inprocessing_model.predict(self.x_te),
+                                                              sensitive_features=self.sens_te)
+            fairness[3][0, :] = demographic_parity_difference(self.y_te,
+                                                              self.postprocessing_model.predict(self.x_te,
+                                                                                                sensitive_features=
+                                                                                                self.sens_te),
+                                                              sensitive_features=self.sens_te)
 
-        if self.fairness_constraint == 'dp':
-            demographic_parity_difference()
+        print('good')
+
