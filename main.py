@@ -11,14 +11,14 @@ if __name__ == '__main__':
 
     test.gen_noise(2)
 
-    # score_base = test.run_baseline()
-    # score_pre = test.run_preprocessing()
-    # score_in = test.run_inprocessing()
-    # score_post = test.run_postprocessing()
+    """ score_base = test.run_baseline()
+    score_pre = test.run_preprocessing()
+    score_in = test.run_inprocessing()
+    score_post = test.run_postprocessing()
 
     print('Baseline accuracy score: ' + str(score_base))
     print('Pre-processing accuracy score: ' + str(score_pre))
     print('In-processing accuracy score: ' + str(score_in))
-    print('Post-processing accuracy score: ' + str(score_post))
+    print('Post-processing accuracy score: ' + str(score_post))"""
 
     test.summary()
