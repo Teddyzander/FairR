@@ -140,5 +140,18 @@ def fetch_adult_data(sens='sex'):
     return data, target, sensitive, cat, bounds
 
 
+def add_noise(data, sens, target, cat):
+
+    # make copies of the data inputs
+    x = data.copy()
+    s = sens.copy
+    y = target.copy()
+
+    # get indices of where continuous [c] data appears and discrete [d] data appears
+    con_index = [None] * cat.count('c')
+    dis_index = [None] * cat.count('d')
+
+
 if __name__ == '__main__':
-    input, target, sens, cat, bounds = fetch_adult_data()
+    data, target, sens, cat, bounds = fetch_adult_data()
+    add_noise(data, sens['sex'], target, cat)
