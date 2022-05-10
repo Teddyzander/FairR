@@ -248,6 +248,13 @@ class RobustMetric:
         return score
 
     def measure_fairness(self, data, target, sens):
+        """
+        Measure the fairness for a specific data set
+        :param data: input data
+        :param target: corresponding output data
+        :param sens: sensitive data
+        :return: Nothing
+        """
 
         # check fairness of baseline model
         baseline_output = self.baseline_model.predict(data)
@@ -271,7 +278,11 @@ class RobustMetric:
         return base_fairness, pre_fairness, in_fairness, post_fairness
 
     def measure_total_fairness(self):
-
+        """
+        Measure the total fairness. This is done by taking the noiseless and all noisy data sets and finding how
+        much each differs from the selected fairness metric
+        :return: The measured fairness across all data sets
+        """
         print('Measuring fairness over all data-sets...')
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
