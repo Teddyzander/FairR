@@ -140,18 +140,49 @@ def fetch_adult_data(sens='sex'):
     return data, target, sensitive, cat, bounds
 
 
-def add_noise(data, sens, target, cat):
-
-    # make copies of the data inputs
-    x = data.copy()
-    s = sens.copy
-    y = target.copy()
+def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
 
     # get indices of where continuous [c] data appears and discrete [d] data appears
     con_index = [None] * cat.count('c')
     dis_index = [None] * cat.count('d')
 
+    con_index_count = 0
+    dis_index_count = 0
+    for index in range(0, len(cat)):
+        if cat[index] == 'c':
+            con_index[con_index_count] = index
+            con_index_count += 1
+        else:
+            dis_index[dis_index_count] = index
+            dis_index_count += 1
+
+    # preallocate memory space to store the noisy data
+    x_noise = [None] * iter
+    y_noise = [None] * iter
+    x_noise = [None] * iter
+
+    for n in range(0, iter):
+        # make copies of the data inputs
+        x = data.copy()
+        s = sens.copy()
+        y = target.copy()
+
+        # use laplacian noise with mean 0 and specified noise level to add noise to continuous data
+        x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
+
+        # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
+        # a particular feature that will be randomly selected from a uniform distribution of all possible values
+        for index in dis_index:
+            num_of_changes = int(0.01 * level * len(x))
+            num_of_instances = np.arange(len(x))
+            change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
+            possible_values = np.arange(bounds[index][0], bounds[index][1] + 1)
+            x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)
+
+        print('okay')
+
+
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    add_noise(data, sens['sex'], target, cat)
+    add_noise(data, sens['sex'], target, cat, bounds, iter=10, level=20)
