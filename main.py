@@ -8,10 +8,13 @@ if __name__ == '__main__':
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
     test = RobustMetric(data=data, target=target, sens='sex', max_iter=2, fairness_constraint='dp')
     test.split_data()
-    score_base = test.run_baseline()
-    score_pre = test.run_preprocessing()
-    score_in = test.run_inprocessing()
-    score_post = test.run_postprocessing()
+
+    test.gen_noise(2)
+
+    # score_base = test.run_baseline()
+    # score_pre = test.run_preprocessing()
+    # score_in = test.run_inprocessing()
+    # score_post = test.run_postprocessing()
 
     print('Baseline accuracy score: ' + str(score_base))
     print('Pre-processing accuracy score: ' + str(score_pre))

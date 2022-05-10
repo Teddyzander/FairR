@@ -131,6 +131,16 @@ class RobustMetric:
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
 
+    def gen_noise(self, iter=10):
+        """
+        Generate the noisy data for each noise level. x_noise is a list of lists, saved to the object.
+        For exmaple, x_noise[a][b] contains the bth run with a noise level of noise_level[a]
+        :param iter: number of iterations that should be run for each noise level
+        :return: Nothing
+        """
+        for level in range(len(self.noise_level)):
+            self.x_noise[level] = data_util.add_noise(self.data, self.cat, self.bounds, iter, self.noise_level[level])
+
     def run_baseline(self):
         """
         Creates the baseline model

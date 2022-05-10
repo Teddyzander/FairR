@@ -140,7 +140,17 @@ def fetch_adult_data(sens='sex'):
     return data, target, sensitive, cat, bounds
 
 
-def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
+def add_noise(data, cat, bounds, iter=10, level=1):
+    """
+    Adds noise to the input data. Continuous data has laplacian noise added with mean 0 and var=level. Discrete data
+    has level/len(data) of the values uniformly randomly selected from all possible values the variable could take
+    :param data: Input data
+    :param cat: category of data - [d] for discrete, [c] for continuous
+    :param bounds: the upper and lower bound of each feature
+    :param iter: Number of noisy instances we want with the selected level
+    :param level: noise level
+    :return: list of noisy data
+    """
 
     # get indices of where continuous [c] data appears and discrete [d] data appears
     con_index = [None] * cat.count('c')
@@ -183,6 +193,6 @@ def add_noise(data, sens, target, cat, bounds, iter=10, level=1):
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    data_noise = add_noise(data, sens['sex'], target, cat, bounds, iter=10, level=0.1)
+    data_noise = add_noise(data, cat, bounds, iter=10, level=0.1)
 
     print('test done')
