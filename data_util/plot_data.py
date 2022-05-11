@@ -4,19 +4,20 @@ import matplotlib.pyplot as plt
 
 def plot_data(data, noise_levels, name='figure',
               model_name=['Baseline', 'Pre-processing', 'In-processing', 'Post-processing'],
-              save=False, x_label='x', y_label='y', title='title', x_lim=None):
+              save=False, x_label='x', y_label='y', title='title', x_lim=None, y_lim=None):
     """
-
-    :param data:
-    :param noise_levels:
-    :param name:
-    :param model_name:
-    :param save:
-    :param x_label:
-    :param y_label:
-    :param title:
-    :param x_lim:
-    :return: the plotting instance
+    plots data as a line graph for each model
+    :param data: input data (y-axis)
+    :param noise_levels: differing levels of noise for each input data (x-axis)
+    :param name: defines where the figure should be saved and with what name
+    :param model_name: different data set names for the legend
+    :param save: if true, save the plot
+    :param x_label: x axis label
+    :param y_label: y axis label
+    :param title: title of the plot
+    :param x_lim: list [a, b] containing the limits of the x-axis
+    :param y_lim: list [a, b] containing the limits of the y-axis
+    :return:
     """
     num_models = len(model_name)
     num_levels = len(noise_levels)
@@ -38,7 +39,10 @@ def plot_data(data, noise_levels, name='figure',
     plt.title(title)
 
     if x_lim is not None:
-        plt.xlim([])
+        plt.xlim(x_lim)
+
+    if y_lim is not None:
+        plt.ylim(y_lim)
 
     if save:
         plt.savefig(name)
