@@ -31,4 +31,11 @@ if __name__ == '__main__':
 
     test = np.load('data/fairness_banking_dp_full_nopre.npy')
 
+    means = np.zeros((4, 21))
+    mean_er = np.zeros((4, 21))
+    for i in range(0, 4):
+        for j in range(0, len(means[0])):
+            means[i, j] = np.mean(test[i, j])
+            mean_er[i, j] = np.std(test[i, j]) / np.sqrt(len(test[i, j]))
+
     print('\nEnd')
