@@ -273,7 +273,6 @@ class RobustMetric:
         much each differs from the selected fairness metric
         :return: The measured fairness across all data sets
         """
-        print('Measuring fairness over all data-sets...')
 
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
@@ -286,7 +285,7 @@ class RobustMetric:
         fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
 
         end = time.time()
-        completion_est = (len(self.noise_level) * self.noise_iter * (end - start)) / 60
+        completion_est = int((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60)
 
         print('Measuring fairness over all data-sets. Estimated time to completion: {} minutes'.format(completion_est))
 
