@@ -17,7 +17,7 @@ def plot_data(data, noise_levels, name='figure',
     :param title: title of the plot
     :param x_lim: list [a, b] containing the limits of the x-axis
     :param y_lim: list [a, b] containing the limits of the y-axis
-    :return:
+    :return: plot object
     """
     num_models = len(model_name)
     num_levels = len(noise_levels)
