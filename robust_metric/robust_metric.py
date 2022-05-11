@@ -288,16 +288,18 @@ class RobustMetric:
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
 
-        x_full = [self.x_te] + self.x_noise
-
         # measure the fairness of the noiseless data set
         fairness[0, 0, :], fairness[1, 0, :], \
-        fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(x_full[0], self.y_te, self.sens_te)
+        fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
 
         # check fairness of each noise_level data set against each model
         for i in range(1, len(self.noise_level) + 1):
             for j in range(0, self.noise_iter):
+
+                # add the required noise to the data-set
+                noisy_x = data_util.add_noise(self.x_te, self.cat, self.bounds, 1, self.noise_level[i - 1])[0]
+
                 fairness[0, i, j], fairness[1, i, j], \
-                fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_full[i][j], self.y_te, self.sens_te)
+                fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(noisy_x, self.y_te, self.sens_te)
 
         return fairness

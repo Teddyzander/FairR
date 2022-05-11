@@ -6,9 +6,10 @@ import warnings
 warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
+
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
     test = RobustMetric(data=data, target=target, sens='sex', max_iter=1000, fairness_constraint='dp',
-                        noise_level=[0.1, 1, 5, 10], noise_iter=5)
+                        noise_level=[0.1, 1, 2, 5, 10], noise_iter=10)
     test.split_data()
 
     test.gen_noise()
