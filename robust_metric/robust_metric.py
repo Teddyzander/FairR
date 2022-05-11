@@ -284,6 +284,7 @@ class RobustMetric:
         :return: The measured fairness across all data sets
         """
         print('Measuring fairness over all data-sets...')
+
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
 
