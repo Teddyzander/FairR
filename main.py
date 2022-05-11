@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
     (data, target) = fetch_adult(return_X_y=True, as_frame=True)
     test = RobustMetric(data=data, target=target, sens='sex', max_iter=1000, fairness_constraint='dp',
-                        noise_level=[1, 2, 3, 5, 7, 10], noise_iter=5)
+                        noise_level=[0.1, 1, 5, 10], noise_iter=5)
     test.split_data()
 
     test.gen_noise()
@@ -26,5 +26,8 @@ if __name__ == '__main__':
     print('Post-processing accuracy score: ' + str(score_post))
 
     test.summary()
+
+    np.save('data/fairness_adult_dp', fairness)
+    test = np.load('data/fairness_adult_dp.npy')
 
     print('\nEnd')
