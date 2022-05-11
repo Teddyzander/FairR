@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def plot_data(data, noise_levels, name='figure',
               model_name=['Baseline', 'Pre-processing', 'In-processing', 'Post-processing'],
-              save=False, x_label='x', y_label='y', title='title', x_lim=None, y_lim=None):
+              save=False, x_label='x', y_label='y', title=None, x_lim=None, y_lim=None):
     """
     plots data as a line graph for each model
     :param data: input data (y-axis)
@@ -34,9 +34,12 @@ def plot_data(data, noise_levels, name='figure',
         ax.plot(x, means[i], list(colours.values())[i], label=model_name[i])
         ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=list(colours.keys())[i])
 
+    plt.legend()
     plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.title(title)
+    plt.ylabel('Difference of {}'.format(y_label))
+
+    if title is not None:
+        plt.title(title)
 
     if x_lim is not None:
         plt.xlim(x_lim)
