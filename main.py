@@ -3,14 +3,13 @@ import warnings
 import data_util.plot_data as plot_data
 from robust_metric.robust_metric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing
-from matplotlib import pyplot
 
 
 warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
-    """(data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
+    (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
     test = RobustMetric(data=data, target=target, sens='V9', max_iter=5000, fairness_constraint='dp',
                         noise_level=np.arange(1, 21), noise_iter=10)
     test.split_data()
@@ -29,7 +28,7 @@ if __name__ == '__main__':
 
     test.summary()
 
-    np.save('data/fairness_banking_dp_data', fairness)"""
+    np.save('data/fairness_banking_dp_data', fairness)
 
     test = np.load('data/fairness_banking_dp_full_nopre.npy')
 
