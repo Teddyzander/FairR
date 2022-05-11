@@ -29,9 +29,9 @@ if __name__ == '__main__':
 
     test.summary()
 
-    np.save('data/fairness_banking_dp_full_nopre', fairness)"""
+    np.save('data/fairness_banking_dp_data', fairness)"""
 
     test = np.load('data/fairness_banking_dp_full_nopre.npy')
 
-    plot_data.plot_data(test, 'fairness_banking_dp', save=True)
+    plot_data.plot_data(test, np.arange(1, 21), 'data/fairness_banking_dp_figure', save=True)
 
