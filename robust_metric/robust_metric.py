@@ -251,9 +251,9 @@ class RobustMetric:
         base_fairness = self.fairness_constraint_metric(target, baseline_output,
                                                         sensitive_features=sens)
         # check fairness of pre-processing model
-        x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
-        x_pre = self.preprocess.transform(x_pre)
-        preprocess_output = self.preprocessing_model.predict(x_pre)
+        # x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
+        # x_pre = self.preprocess.transform(x_pre)
+        preprocess_output = self.preprocessing_model.predict(data)
         pre_fairness = self.fairness_constraint_metric(target, preprocess_output,
                                                        sensitive_features=sens)
         # check fairness of in-processing model
@@ -287,7 +287,8 @@ class RobustMetric:
         end = time.time()
         completion_est = int((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60)
 
-        print('Measuring fairness over all data-sets. Estimated time to completion: {} minutes'.format(completion_est))
+        print('Measuring fairness over all data-sets. ' +
+              'Estimated time to completion: {} minutes from {}'.format(completion_est, time. strftime("%H:%M:%S")))
 
         # check fairness of each noise_level data set against each model
         for i in range(1, len(self.noise_level) + 1):
