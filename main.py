@@ -14,8 +14,6 @@ parser.add_argument('--dataset', type=str, default='adult',
                     help='select dataset to test')
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
-parser.add_argument('--evaluate_metric', type=str, default='dp',
-                    help='using which metric to evaluate the robustness of model, including eo,dp,fp,tp')
 parser.add_argument('--output_dir', type=str, default='data/', help='output dir for saving the result')
 parser.add_argument('--max_noise', type=int, default=20, help='maximum level of noise for test')
 parser.add_argument('--iterations', type=int, default=10, help='Number of data samples per noise level')
@@ -23,15 +21,17 @@ args = parser.parse_args()
 
 # Dictionary to hold full titles of training constraints (used for plot axis)
 full_constraints = {'dp': 'Demographic Parity',
-                   'eo': 'Equalized Odds',
-                   'fp': 'False Positive',
-                   'tp': 'True Positive'}
+                    'eo': 'Equalized Odds',
+                    'fp': 'False Positive',
+                    'tp': 'True Positive'}
 
 if __name__ == '__main__':
 
     # Print summary of analysis
     print('Running {} analysis on {} data set with maximum noise of {} with {} iterations per noise level'
-          .format(args.train_constraint, args.dataset, args.max_noise, args.iterations))
+          .format(full_constraints[args.train_constraint], args.dataset, args.max_noise, args.iterations))
+
+    # set up variables from arguments
     if args.dataset == 'adult':
         (data, target) = fetch_adult(return_X_y=True, as_frame=True)
         sens = 'sex'
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V9'
 
-    test = RobustMetric(data=data, target=target, sens=sens, max_iter=2, fairness_constraint=args.train_constraint,
+    test = RobustMetric(data=data, target=target, sens=sens, max_iter=5, fairness_constraint=args.train_constraint,
                         noise_level=np.arange(1, args.max_noise + 1), noise_iter=args.iterations)
     test.split_data()
 
