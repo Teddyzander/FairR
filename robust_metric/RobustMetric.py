@@ -36,8 +36,6 @@ class RobustMetric:
         self.noise_iter = noise_iter
         # save noise levels for robustness measure
         self.noise_level = noise_level
-        # preallocate memory to store noisy data
-        self.x_noise = [None] * len(noise_level)
 
         # if there is no defined data, fetch the adult data set
         if data is None and target is None:
