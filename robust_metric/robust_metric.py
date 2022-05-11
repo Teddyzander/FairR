@@ -1,5 +1,6 @@
 import data_util.fetch_data as data_util
 import numpy as np
+import time
 from sklearn.svm import SVC
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
@@ -139,17 +140,6 @@ class RobustMetric:
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
 
-    def gen_noise(self):
-        """
-        Generate the noisy data for each noise level. x_noise is a list of lists, saved to the object.
-        For exmaple, x_noise[a][b] contains the bth run with a noise level of noise_level[a]
-        :param iter: number of iterations that should be run for each noise level
-        :return: Nothing
-        """
-        for level in range(len(self.noise_level)):
-            self.x_noise[level] = data_util.add_noise(self.x_te, self.cat, self.bounds, self.noise_iter,
-                                                      self.noise_level[level])
-
     def run_baseline(self):
         """
         Creates the baseline model
@@ -288,9 +278,17 @@ class RobustMetric:
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
 
+        # Set up for estimating time to completion
+        start = time.time()
+
         # measure the fairness of the noiseless data set
         fairness[0, 0, :], fairness[1, 0, :], \
         fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
+
+        end = time.time()
+        completion_est = (len(self.noise_level) * self.noise_iter * (end - start)) / 60
+
+        print('Measuring fairness over all data-sets. Estimated time to completion: {} minutes'.format(completion_est))
 
         # check fairness of each noise_level data set against each model
         for i in range(1, len(self.noise_level) + 1):
