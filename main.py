@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 import data_util.plot_data as plot_data
-from robust_metric.robust_metric import RobustMetric
+from robust_metric.RobustMetric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing
 
 
