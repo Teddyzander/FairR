@@ -1,5 +1,6 @@
 import data_util.fetch_data as data_util
 import numpy as np
+import time
 from sklearn.svm import SVC
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
@@ -139,17 +140,6 @@ class RobustMetric:
         self.x_tr, self.y_tr, self.sens_tr, self.x_te, self.y_te, self.sens_te = \
             data_util.split(self.data, self.target, self.sensitive, ratio, seed, sens_name=sens_key)
 
-    def gen_noise(self):
-        """
-        Generate the noisy data for each noise level. x_noise is a list of lists, saved to the object.
-        For exmaple, x_noise[a][b] contains the bth run with a noise level of noise_level[a]
-        :param iter: number of iterations that should be run for each noise level
-        :return: Nothing
-        """
-        for level in range(len(self.noise_level)):
-            self.x_noise[level] = data_util.add_noise(self.x_te, self.cat, self.bounds, self.noise_iter,
-                                                      self.noise_level[level])
-
     def run_baseline(self):
         """
         Creates the baseline model
@@ -261,9 +251,9 @@ class RobustMetric:
         base_fairness = self.fairness_constraint_metric(target, baseline_output,
                                                         sensitive_features=sens)
         # check fairness of pre-processing model
-        x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
-        x_pre = self.preprocess.transform(x_pre)
-        preprocess_output = self.preprocessing_model.predict(x_pre)
+        # x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
+        # x_pre = self.preprocess.transform(x_pre)
+        preprocess_output = self.preprocessing_model.predict(data)
         pre_fairness = self.fairness_constraint_metric(target, preprocess_output,
                                                        sensitive_features=sens)
         # check fairness of in-processing model
@@ -283,21 +273,31 @@ class RobustMetric:
         much each differs from the selected fairness metric
         :return: The measured fairness across all data sets
         """
-        print('Measuring fairness over all data-sets...')
 
         # preallocate memory to hold all the fairness measurements
         fairness = np.zeros((4, len(self.noise_level) + 1, self.noise_iter))
 
-        x_full = [self.x_te] + self.x_noise
+        # Set up for estimating time to completion
+        start = time.time()
 
         # measure the fairness of the noiseless data set
         fairness[0, 0, :], fairness[1, 0, :], \
-        fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(x_full[0], self.y_te, self.sens_te)
+        fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
+
+        end = time.time()
+        completion_est = int((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60)
+
+        print('Measuring fairness over all data-sets. ' +
+              'Estimated time to completion: {} minutes from {}'.format(completion_est, time. strftime("%H:%M:%S")))
 
         # check fairness of each noise_level data set against each model
         for i in range(1, len(self.noise_level) + 1):
             for j in range(0, self.noise_iter):
+
+                # add the required noise to the data-set
+                x_te_noise = data_util.add_noise(self.x_te, self.cat, self.bounds, 1, self.noise_level[i - 1])[0]
+
                 fairness[0, i, j], fairness[1, i, j], \
-                fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_full[i][j], self.y_te, self.sens_te)
+                fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_te_noise, self.y_te, self.sens_te)
 
         return fairness
