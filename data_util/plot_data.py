@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def plot_data(data, noise_levels, name='figure',
               model_name=['Baseline', 'Pre-processing', 'In-processing', 'Post-processing'],
-              save=False, x_label='x', y_label='y', x_lim=None):
+              save=False, x_label='x', y_label='y', title='title', x_lim=None):
     num_models = len(model_name)
     num_levels = len(noise_levels)
     colours = {'red': '-r', 'green': '-g', 'blue': '-b', 'black': '-k'}
@@ -22,6 +22,7 @@ def plot_data(data, noise_levels, name='figure',
 
     plt.xlabel(x_label)
     plt.ylabel(y_label)
+    plt.title(title)
 
     if x_lim is not None:
         plt.xlim([])

@@ -33,5 +33,5 @@ if __name__ == '__main__':
 
     test = np.load('data/fairness_banking_dp_full_nopre.npy')
 
-    plot_data.plot_data(test, np.arange(1, 21), 'data/fairness_banking_dp_figure', save=True)
+    plot_data.plot_data(test, np.arange(1, 21), 'data/fairness_banking_dp_figure')
 
