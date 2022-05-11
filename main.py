@@ -1,8 +1,10 @@
-from robust_metric.robust_metric import RobustMetric
-from fairlearn.datasets import fetch_adult, fetch_bank_marketing
 import numpy as np
 import warnings
+import data_util.plot_data as plot_data
+from robust_metric.robust_metric import RobustMetric
+from fairlearn.datasets import fetch_adult, fetch_bank_marketing
 from matplotlib import pyplot
+
 
 warnings.filterwarnings("ignore")
 
@@ -31,19 +33,5 @@ if __name__ == '__main__':
 
     test = np.load('data/fairness_banking_dp_full_nopre.npy')
 
-    name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
-    colours = {'red': '-r', 'green': '-g', 'blue': '-b', 'black': '-k'}
-    means = np.zeros((4, 21))
-    mean_er = np.zeros((4, 21))
-    x = np.arange(0, 21)
-    for i in range(0, 4):
-        for j in range(0, len(means[0])):
-            means[i, j] = np.mean(test[i, j])
-            mean_er[i, j] = np.std(test[i, j]) / np.sqrt(len(test[i, j]))
+    plot_data.plot_data(test, save=True)
 
-    for i in range(0, 4):
-        pyplot.plot(x, means[i], list(colours.values())[i], label=name[i])
-        pyplot.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=list(colours.keys())[i])
-    pyplot.show()
-
-    print('\nEnd')
