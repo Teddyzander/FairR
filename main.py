@@ -51,7 +51,7 @@ if __name__ == '__main__':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V3'
 
-    test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters,
+    test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=np.arange(1, args.max_noise + 1),
                         noise_iter=args.noise_iters)
     test.split_data()
