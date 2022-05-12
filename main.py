@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import os
 import warnings
 import data_util.plot_data as plot_data
 from robust_metric.RobustMetric import RobustMetric
@@ -14,7 +15,7 @@ parser.add_argument('--dataset', type=str, default='adult',
                     help='select dataset to test')
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
-parser.add_argument('--output_dir', type=str, default='data/', help='output dir for saving the result')
+parser.add_argument('--output_dir', type=str, default='data', help='output dir for saving the result')
 parser.add_argument('--max_noise', type=int, default=20, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=5000, help='Maximum iterations for model fitting')
@@ -36,6 +37,10 @@ if __name__ == '__main__':
           'Iterations to Fit Models: {}\n'
           .format(full_constraints[args.train_constraint], args.dataset,
                   args.max_noise, args.noise_iters, args.model_iters))
+
+    # if the specified directory doesn't exist, we need to create it
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
     # set up variables from arguments
     if args.dataset == 'adult':
@@ -64,7 +69,7 @@ if __name__ == '__main__':
 
     test.summary()
 
-    directory = '{}fairness_{}_{}_data'.format(args.output_dir, args.dataset, args.train_constraint)
+    directory = '{}/fairness_{}_{}_data'.format(args.output_dir, args.dataset, args.train_constraint)
 
     np.save(directory, fairness)
 
@@ -72,5 +77,3 @@ if __name__ == '__main__':
 
     plot_data.plot_data(test, np.arange(1, args.max_noise + 1), directory + '_figure', save=True,
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
-
-    print('End')
