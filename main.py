@@ -16,7 +16,8 @@ parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
 parser.add_argument('--output_dir', type=str, default='data/', help='output dir for saving the result')
 parser.add_argument('--max_noise', type=int, default=20, help='maximum level of noise for test')
-parser.add_argument('--iterations', type=int, default=10, help='Number of data samples per noise level')
+parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
+parser.add_argument('--model_iters', type=int, default=5000, help='Maximum iterations for model fitting')
 args = parser.parse_args()
 
 # Dictionary to hold full titles of training constraints (used for plot axis)
@@ -28,8 +29,13 @@ full_constraints = {'dp': 'Demographic Parity',
 if __name__ == '__main__':
 
     # Print summary of analysis
-    print('Running {} analysis on {} data set with maximum noise of {} with {} iterations per noise level'
-          .format(full_constraints[args.train_constraint], args.dataset, args.max_noise, args.iterations))
+    print('Fairness Constraint: {}\n'
+          'Data-set:  {}\n'
+          'Maximum Noise: {}\n'
+          'Iterations per Noise Level: {}\n'
+          'Iterations to Fit Models: {}\n'
+          .format(full_constraints[args.train_constraint], args.dataset,
+                  args.max_noise, args.noise_iters, args.model_iters))
 
     # set up variables from arguments
     if args.dataset == 'adult':
@@ -39,8 +45,9 @@ if __name__ == '__main__':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V9'
 
-    test = RobustMetric(data=data, target=target, sens=sens, max_iter=5, fairness_constraint=args.train_constraint,
-                        noise_level=np.arange(1, args.max_noise + 1), noise_iter=args.iterations)
+    test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters,
+                        fairness_constraint=args.train_constraint, noise_level=np.arange(1, args.max_noise + 1),
+                        noise_iter=args.noise_iters)
     test.split_data()
 
     score_base = test.run_baseline()
