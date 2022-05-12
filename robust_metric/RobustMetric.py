@@ -154,7 +154,7 @@ class RobustMetric:
 
         # run the model with the training data
         try:
-            self.baseline_model = self.model(solver='lbfgs', alpha=1e-5,
+            self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
                                              hidden_layer_sizes=(10, 8, 4, 2), random_state=123)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
@@ -192,7 +192,7 @@ class RobustMetric:
         # fit the model on the preprocessed data
         try:
             self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(10, 8, 4, 2),
-                                                  random_state=123)
+                                                  max_iter=self.max_iter, random_state=123)
             self.preprocessing_model.fit(self.x_tr, self.y_tr)
 
         except:
@@ -219,7 +219,7 @@ class RobustMetric:
         try:
             self.inprocessing_model = ExponentiatedGradient(self.model(solver='lbfgs', alpha=1e-5,
                                                                        hidden_layer_sizes=(10, 8, 4, 2),
-                                                                       random_state=123),
+                                                                       max_iter=self.max_iter, random_state=123),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
