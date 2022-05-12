@@ -18,7 +18,7 @@ parser.add_argument('--train_constraint', type=str, default='dp',
 parser.add_argument('--output_dir', type=str, default='data', help='output dir for saving the result')
 parser.add_argument('--max_noise', type=int, default=20, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
-parser.add_argument('--model_iters', type=int, default=5000, help='Maximum iterations for model fitting')
+parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 args = parser.parse_args()
 
 # Dictionary to hold full titles of training constraints (used for plot axis)
@@ -56,16 +56,15 @@ if __name__ == '__main__':
     test.split_data()
 
     score_base = test.run_baseline()
+    print('Baseline accuracy score: ' + str(score_base))
     score_pre = test.run_preprocessing()
+    print('Pre-processing accuracy score: ' + str(score_pre))
     score_in = test.run_inprocessing()
+    print('In-processing accuracy score: ' + str(score_in))
     score_post = test.run_postprocessing()
+    print('Post-processing accuracy score: ' + str(score_post))
 
     fairness = test.measure_total_fairness()
-
-    print('Baseline accuracy score: ' + str(score_base))
-    print('Pre-processing accuracy score: ' + str(score_pre))
-    print('In-processing accuracy score: ' + str(score_in))
-    print('Post-processing accuracy score: ' + str(score_post))
 
     test.summary()
 
