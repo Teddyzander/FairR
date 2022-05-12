@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 
 # Define the arguments that can be taken to change to type of analysis
 parser = argparse.ArgumentParser(description="evaluate the robustness of models")
-parser.add_argument('--dataset', type=str, default='adult',
+parser.add_argument('--dataset', type=str, default='bank',
                     help='select dataset to test')
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         sens = 'sex'
     if args.dataset == 'bank':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
-        sens = 'V9'
+        sens = 'V3'
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters,
                         fairness_constraint=args.train_constraint, noise_level=np.arange(1, args.max_noise + 1),
