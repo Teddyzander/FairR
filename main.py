@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 
 # Define the arguments that can be taken to change to type of analysis
 parser = argparse.ArgumentParser(description="evaluate the robustness of models")
-parser.add_argument('--dataset', type=str, default='bank',
+parser.add_argument('--dataset', type=str, default='adult',
                     help='select dataset to test')
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
