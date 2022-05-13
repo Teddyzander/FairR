@@ -70,7 +70,8 @@ if __name__ == '__main__':
 
     test.summary()
 
-    directory = '{}/fairness_{}_{}_data'.format(args.output_dir, args.dataset, args.train_constraint)
+    directory = '{}/fairness_{}_{}_{}_data'.format(args.output_dir, args.dataset,
+                                                   args.model_type, args.train_constraint)
 
     np.save(directory, fairness)
 
