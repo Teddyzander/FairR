@@ -7,8 +7,8 @@ from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity, \
     ExponentiatedGradient
-from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference, false_positive_rate, \
-    true_positive_rate
+from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference, \
+    false_positive_rate_difference, true_positive_rate_difference
 
 
 class RobustMetric:
@@ -69,13 +69,13 @@ class RobustMetric:
             self.fairness_constraint = 'true_positive_rate_parity'
             self.fairness_constraint_full = 'True Positive Rate Parity'
             self.fairness_constraint_func = TruePositiveRateParity()
-            self.fairness_constraint_metric = true_positive_rate
+            self.fairness_constraint_metric = true_positive_rate_difference
 
         elif fairness_constraint == 'fp':
             self.fairness_constraint = 'false_positive_rate_parity'
             self.fairness_constraint_full = 'False Positive Rate Parity'
             self.fairness_constraint_func = FalsePositiveRateParity()
-            self.fairness_constraint_metric = false_positive_rate
+            self.fairness_constraint_metric = false_positive_rate_difference
 
         # define empty lists for training and testing data across inputs, outputs, and sensitive data
         self.x_tr = []
