@@ -32,11 +32,12 @@ if __name__ == '__main__':
 
     # Print summary of analysis
     print('Fairness Constraint: {}\n'
+          'Model Type: {}\n'
           'Data-set:  {}\n'
           'Maximum Noise: {}\n'
           'Iterations per Noise Level: {}\n'
           'Iterations to Fit Models: {}\n'
-          .format(full_constraints[args.train_constraint], args.dataset,
+          .format(full_constraints[args.train_constraint], args.model_type, args.dataset,
                   args.max_noise, args.noise_iters, args.model_iters))
 
     # if the specified directory doesn't exist, we need to create it

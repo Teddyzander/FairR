@@ -50,7 +50,7 @@ class RobustMetric:
         self.model = SVC
 
         if model_type == 'MLP':
-            self.model_type = 'Multilayer Perceptron (SVC)'
+            self.model_type = 'Multilayer Perceptron (MLP)'
             self.model = MLPClassifier
 
         # define fairness constraint to be used
@@ -130,7 +130,7 @@ class RobustMetric:
         self.max_iter = new_max_iter
         self.noise_iter = new_noise_iter
 
-    def split_data(self, ratio=0.7, seed=123):
+    def split_data(self, ratio=0.7, seed=666):
         """
         splits the data into a training data set and a testing data set and saves them to the instance
         :param ratio: ratio of the split (eg 0.7 is 70% training, 30% testing)
@@ -153,12 +153,12 @@ class RobustMetric:
         print('Fitting baseline model...')
 
         # run the model with the training data
-        try:
+        if self.model_type == 'Multilayer Perceptron (MLP)':
             self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
-                                             hidden_layer_sizes=(10, 8, 4, 2), random_state=123)
+                                             hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
-        except:
+        elif self.model_type == 'Support Vector Classification (SVC)':
             self.baseline_model = self.model(max_iter=self.max_iter)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
@@ -190,12 +190,12 @@ class RobustMetric:
         x_te_pre = self.preprocess.transform(x_te_pre)
 
         # fit the model on the preprocessed data
-        try:
-            self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(10, 8, 4, 2),
+        if self.model_type == 'Multilayer Perceptron (MLP)':
+            self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(32, 16, 8, 4, 2),
                                                   max_iter=self.max_iter, random_state=123)
-            self.preprocessing_model.fit(self.x_tr, self.y_tr)
+            self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
-        except:
+        elif self.model_type == 'Support Vector Classification (SVC)':
             self.preprocessing_model = self.model(max_iter=self.max_iter)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
@@ -216,14 +216,14 @@ class RobustMetric:
         print('Fitting in-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # define the model
-        try:
+        if self.model_type == 'Multilayer Perceptron (MLP)':
             self.inprocessing_model = ExponentiatedGradient(self.model(solver='lbfgs', alpha=1e-5,
-                                                                       hidden_layer_sizes=(10, 8, 4, 2),
+                                                                       hidden_layer_sizes=(32, 16, 8, 4, 2),
                                                                        max_iter=self.max_iter, random_state=123),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
-        except:
+        elif self.model_type == 'Support Vector Classification (SVC)':
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
@@ -252,7 +252,7 @@ class RobustMetric:
             constraints=self.fairness_constraint,
             objective="accuracy_score",
             prefit=True,
-            predict_method='decision_function')
+            predict_method='predict')
 
         # fit the postprocessing model with the allocated fairness constraint
         self.postprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
