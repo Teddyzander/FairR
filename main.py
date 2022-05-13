@@ -53,8 +53,11 @@ if __name__ == '__main__':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V3'
 
+    # levels = np.arange(1, args.max_noise + 1)
+    levels = np.arange(0.01, 7.51, 0.01)
+
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
-                        fairness_constraint=args.train_constraint, noise_level=np.arange(1, args.max_noise + 1),
+                        fairness_constraint=args.train_constraint, noise_level=levels,
                         noise_iter=args.noise_iters)
     test.split_data()
 
@@ -78,5 +81,5 @@ if __name__ == '__main__':
 
     test = np.load(directory + '.npy')
 
-    plot_data.plot_data(test, np.arange(1, args.max_noise + 1), directory + '_figure', save=True,
+    plot_data.plot_data(test, levels, directory + '_figure', save=True,
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])

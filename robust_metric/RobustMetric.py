@@ -64,7 +64,7 @@ class RobustMetric:
 
         elif model_type == 'DTC':
             self.model_type = 'Decision Tree Classifier (DTC)'
-            self.model = SGDClassifier
+            self.model = DecisionTreeClassifier
 
         # define fairness constraint to be used
         self.fairness_constraint = 'demographic_parity'
@@ -170,8 +170,9 @@ class RobustMetric:
             self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
                                              hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
-                'Stochastic Gradient Descent (SGD)':
+        elif self.model_type == 'Support Vector Classification (SVC)' or \
+                self.model_type == 'Logistic Regression (LR)' or \
+                self.model_type == 'Stochastic Gradient Descent (SGD)':
             self.baseline_model = self.model(max_iter=self.max_iter)
 
         elif self.model_type == 'Decision Tree Classifier (DTC)':
@@ -215,8 +216,9 @@ class RobustMetric:
             self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(32, 16, 8, 4, 2),
                                                   max_iter=self.max_iter, random_state=123)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
-                'Stochastic Gradient Descent (SGD)':
+        elif self.model_type == 'Support Vector Classification (SVC)' or \
+                self.model_type == 'Logistic Regression (LR)' or \
+                self.model_type == 'Stochastic Gradient Descent (SGD)':
             self.preprocessing_model = self.model(max_iter=self.max_iter)
 
         elif self.model_type == 'Decision Tree Classifier (DTC)':
@@ -252,8 +254,9 @@ class RobustMetric:
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
-                'Stochastic Gradient Descent (SGD)':
+        elif self.model_type == 'Support Vector Classification (SVC)' or \
+                self.model_type == 'Logistic Regression (LR)' or \
+                self.model_type == 'Stochastic Gradient Descent (SGD)':
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
