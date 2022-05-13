@@ -2,12 +2,13 @@ import data_util.fetch_data as data_util
 import numpy as np
 import time
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity, \
     ExponentiatedGradient
-from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference, true_positive_rate_difference, \
-    false_positive_rate_difference
+from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference, \
+    false_positive_rate_difference, true_positive_rate_difference
 
 
 class RobustMetric:
@@ -48,8 +49,9 @@ class RobustMetric:
         self.model_type = 'Support Vector Classification (SVC)'
         self.model = SVC
 
-        if model_type != 'SVC':
-            print('Model not included')
+        if model_type == 'MLP':
+            self.model_type = 'Multilayer Perceptron (MLP)'
+            self.model = MLPClassifier
 
         # define fairness constraint to be used
         self.fairness_constraint = 'demographic_parity'
@@ -128,7 +130,7 @@ class RobustMetric:
         self.max_iter = new_max_iter
         self.noise_iter = new_noise_iter
 
-    def split_data(self, ratio=0.7, seed=123):
+    def split_data(self, ratio=0.7, seed=666):
         """
         splits the data into a training data set and a testing data set and saves them to the instance
         :param ratio: ratio of the split (eg 0.7 is 70% training, 30% testing)
@@ -151,8 +153,14 @@ class RobustMetric:
         print('Fitting baseline model...')
 
         # run the model with the training data
-        self.baseline_model = self.model(max_iter=self.max_iter)
-        self.baseline_model.fit(self.x_tr, self.y_tr)
+        if self.model_type == 'Multilayer Perceptron (MLP)':
+            self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
+                                             hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
+            self.baseline_model.fit(self.x_tr, self.y_tr)
+
+        elif self.model_type == 'Support Vector Classification (SVC)':
+            self.baseline_model = self.model(max_iter=self.max_iter)
+            self.baseline_model.fit(self.x_tr, self.y_tr)
 
         # get score of the baseline model with the testing data
         score = self.baseline_model.score(self.x_te, self.y_te)
@@ -182,8 +190,14 @@ class RobustMetric:
         x_te_pre = self.preprocess.transform(x_te_pre)
 
         # fit the model on the preprocessed data
-        self.preprocessing_model = self.model(max_iter=self.max_iter)
-        self.preprocessing_model.fit(x_tr_pre, self.y_tr)
+        if self.model_type == 'Multilayer Perceptron (MLP)':
+            self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(32, 16, 8, 4, 2),
+                                                  max_iter=self.max_iter, random_state=123)
+            self.preprocessing_model.fit(x_tr_pre, self.y_tr)
+
+        elif self.model_type == 'Support Vector Classification (SVC)':
+            self.preprocessing_model = self.model(max_iter=self.max_iter)
+            self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
         # get score of the pre-processing model with the testing data
         score = self.preprocessing_model.score(x_te_pre, self.y_te)
@@ -202,9 +216,17 @@ class RobustMetric:
         print('Fitting in-processing model with {}'.format(self.fairness_constraint_full) + '...')
 
         # define the model
-        self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
-                                                        constraints=self.fairness_constraint_func,
-                                                        eps=eps, nu=nu)
+        if self.model_type == 'Multilayer Perceptron (MLP)':
+            self.inprocessing_model = ExponentiatedGradient(self.model(solver='lbfgs', alpha=1e-5,
+                                                                       hidden_layer_sizes=(32, 16, 8, 4, 2),
+                                                                       max_iter=self.max_iter, random_state=123),
+                                                            constraints=self.fairness_constraint_func,
+                                                            eps=eps, nu=nu, max_iter=50)
+
+        elif self.model_type == 'Support Vector Classification (SVC)':
+            self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
+                                                            constraints=self.fairness_constraint_func,
+                                                            eps=eps, nu=nu, max_iter=50)
 
         # run the optimisation model for the defined parameters over the training dataset
         self.inprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
@@ -228,7 +250,9 @@ class RobustMetric:
         self.postprocessing_model = ThresholdOptimizer(
             estimator=self.baseline_model,
             constraints=self.fairness_constraint,
-            prefit=True)
+            objective="accuracy_score",
+            prefit=True,
+            predict_method='predict')
 
         # fit the postprocessing model with the allocated fairness constraint
         self.postprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
@@ -254,9 +278,9 @@ class RobustMetric:
             base_fairness = self.fairness_constraint_metric(target, baseline_output,
                                                             sensitive_features=sens)
             # check fairness of pre-processing model
-            # x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
-            # x_pre = self.preprocess.transform(x_pre)
-            preprocess_output = self.preprocessing_model.predict(data)
+            x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
+            x_pre = self.preprocess.transform(x_pre)
+            preprocess_output = self.preprocessing_model.predict(x_pre)
             pre_fairness = self.fairness_constraint_metric(target, preprocess_output,
                                                            sensitive_features=sens)
             # check fairness of in-processing model
@@ -273,9 +297,9 @@ class RobustMetric:
             baseline_output = self.baseline_model.predict(data)
             base_fairness = self.fairness_constraint_metric(target, baseline_output)
             # check fairness of pre-processing model
-            # x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
-            # x_pre = self.preprocess.transform(x_pre)
-            preprocess_output = self.preprocessing_model.predict(data)
+            x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
+            x_pre = self.preprocess.transform(x_pre)
+            preprocess_output = self.preprocessing_model.predict(x_pre)
             pre_fairness = self.fairness_constraint_metric(target, preprocess_output)
             # check fairness of in-processing model
             inprocess_output = self.inprocessing_model.predict(data)
@@ -310,6 +334,7 @@ class RobustMetric:
               .format(completion_est, time. strftime("%H:%M:%S")))
 
         # check fairness of each noise_level data set against each model
+        start = time.time()
         for i in range(1, len(self.noise_level) + 1):
             for j in range(0, self.noise_iter):
 
@@ -318,5 +343,8 @@ class RobustMetric:
 
                 fairness[0, i, j], fairness[1, i, j], \
                 fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_te_noise, self.y_te, self.sens_te)
+        end = time.time()
+
+        print('{:.4f} s'.format(end - start))
 
         return fairness

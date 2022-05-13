@@ -3,7 +3,7 @@ from fairlearn.datasets import fetch_adult
 from sklearn.model_selection import train_test_split
 
 
-def split(data, target, sensitive, ratio=0.7, seed=666, sens_name='sex'):
+def split(data, target, sensitive, ratio=0.7, seed=876, sens_name='sex'):
     """
     Splits the data into training data and testing data
     :param data: input data
