@@ -166,13 +166,17 @@ class RobustMetric:
                                              hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
-        elif self.model_type == ('Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or
-                                 'Stochastic Gradient Descent (SGD)'):
+        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
+                'Stochastic Gradient Descent (SGD)':
             self.baseline_model = self.model(max_iter=self.max_iter)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
         # get score of the baseline model with the testing data
-        score = self.baseline_model.score(self.x_te, self.y_te)
+        try:
+            score = self.baseline_model.score(self.x_te, self.y_te)
+        except:
+            output = self.baseline_model.predict(self.x_te)
+            score = 1 - np.mean(np.abs(output - self.y_te))
 
         return score
 
@@ -204,13 +208,17 @@ class RobustMetric:
                                                   max_iter=self.max_iter, random_state=123)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
-        elif self.model_type == ('Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or
-                                 'Stochastic Gradient Descent (SGD)'):
+        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
+                'Stochastic Gradient Descent (SGD)':
             self.preprocessing_model = self.model(max_iter=self.max_iter)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
         # get score of the pre-processing model with the testing data
-        score = self.preprocessing_model.score(x_te_pre, self.y_te)
+        try:
+            score = self.preprocessing_model.score(x_te_pre, self.y_te)
+        except:
+            output = self.preprocessing_model.predict(self.x_te)
+            score = 1 - np.mean(np.abs(output - self.y_te))
 
         return score
 
@@ -233,8 +241,8 @@ class RobustMetric:
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
-        elif self.model_type == ('Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or
-                                 'Stochastic Gradient Descent (SGD)'):
+        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
+                'Stochastic Gradient Descent (SGD)':
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)

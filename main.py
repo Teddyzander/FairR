@@ -15,7 +15,7 @@ parser.add_argument('--dataset', type=str, default='adult',
                     help='select dataset to test')
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
-parser.add_argument('--output_dir', type=str, default='data', help='output dir for saving the result')
+parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
 parser.add_argument('--max_noise', type=int, default=20, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
