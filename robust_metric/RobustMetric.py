@@ -4,6 +4,7 @@ import time
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
+from sklearn.tree import DecisionTreeClassifier
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity, \
@@ -59,6 +60,10 @@ class RobustMetric:
 
         elif model_type == 'SGD':
             self.model_type = 'Stochastic Gradient Descent (SGD)'
+            self.model = SGDClassifier
+
+        elif model_type == 'DTC':
+            self.model_type = 'Decision Tree Classifier (DTC)'
             self.model = SGDClassifier
 
         # define fairness constraint to be used
@@ -164,12 +169,15 @@ class RobustMetric:
         if self.model_type == 'Multilayer Perceptron (MLP)':
             self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
                                              hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
-            self.baseline_model.fit(self.x_tr, self.y_tr)
 
         elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
                 'Stochastic Gradient Descent (SGD)':
             self.baseline_model = self.model(max_iter=self.max_iter)
-            self.baseline_model.fit(self.x_tr, self.y_tr)
+
+        elif self.model_type == 'Decision Tree Classifier (DTC)':
+            self.baseline_model = self.model()
+
+        self.baseline_model.fit(self.x_tr, self.y_tr)
 
         # get score of the baseline model with the testing data
         try:
@@ -206,12 +214,15 @@ class RobustMetric:
         if self.model_type == 'Multilayer Perceptron (MLP)':
             self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(32, 16, 8, 4, 2),
                                                   max_iter=self.max_iter, random_state=123)
-            self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
         elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
                 'Stochastic Gradient Descent (SGD)':
             self.preprocessing_model = self.model(max_iter=self.max_iter)
-            self.preprocessing_model.fit(x_tr_pre, self.y_tr)
+
+        elif self.model_type == 'Decision Tree Classifier (DTC)':
+            self.preprocessing_model = self.model()
+
+        self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
         # get score of the pre-processing model with the testing data
         try:
@@ -244,6 +255,11 @@ class RobustMetric:
         elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or \
                 'Stochastic Gradient Descent (SGD)':
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
+                                                            constraints=self.fairness_constraint_func,
+                                                            eps=eps, nu=nu, max_iter=50)
+
+        elif self.model_type == 'Decision Tree Classifier (DTC)':
+            self.inprocessing_model = ExponentiatedGradient(self.model(),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 

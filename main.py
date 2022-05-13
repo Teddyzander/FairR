@@ -20,7 +20,7 @@ parser.add_argument('--max_noise', type=int, default=20, help='maximum level of 
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
-                                                                  'including SVC, MLP, LR, SGD')
+                                                                  'including SVC, MLP, LR, SGD, DTC')
 args = parser.parse_args()
 
 # Dictionary to hold full titles of training constraints (used for plot axis)
