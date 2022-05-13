@@ -1,6 +1,7 @@
 import data_util.fetch_data as data_util
 import numpy as np
 import time
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from fairlearn.postprocessing import ThresholdOptimizer
@@ -52,6 +53,9 @@ class RobustMetric:
         if model_type == 'MLP':
             self.model_type = 'Multilayer Perceptron (MLP)'
             self.model = MLPClassifier
+        elif model_type == 'LR':
+            self.model_type = 'Logistic Regression (LR)'
+            self.model = LogisticRegression
 
         # define fairness constraint to be used
         self.fairness_constraint = 'demographic_parity'
@@ -158,7 +162,7 @@ class RobustMetric:
                                              hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
-        elif self.model_type == 'Support Vector Classification (SVC)':
+        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)':
             self.baseline_model = self.model(max_iter=self.max_iter)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
@@ -195,7 +199,7 @@ class RobustMetric:
                                                   max_iter=self.max_iter, random_state=123)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
-        elif self.model_type == 'Support Vector Classification (SVC)':
+        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)':
             self.preprocessing_model = self.model(max_iter=self.max_iter)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
@@ -223,7 +227,7 @@ class RobustMetric:
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
-        elif self.model_type == 'Support Vector Classification (SVC)':
+        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)':
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
