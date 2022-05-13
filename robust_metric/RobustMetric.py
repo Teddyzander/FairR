@@ -363,7 +363,7 @@ class RobustMetric:
         fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
 
         end = time.time()
-        completion_est = int((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60)
+        completion_est = np.round(((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60), decimals=2)
 
         print('Measuring fairness over all data-sets. Estimated time to completion: {} minutes from {}'
               .format(completion_est, time.strftime("%H:%M:%S")))
