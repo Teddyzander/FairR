@@ -1,7 +1,7 @@
 import data_util.fetch_data as data_util
 import numpy as np
 import time
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from fairlearn.postprocessing import ThresholdOptimizer
@@ -56,6 +56,10 @@ class RobustMetric:
         elif model_type == 'LR':
             self.model_type = 'Logistic Regression (LR)'
             self.model = LogisticRegression
+
+        elif model_type == 'SGD':
+            self.model_type = 'Stochastic Gradient Descent (SGD)'
+            self.model = SGDClassifier
 
         # define fairness constraint to be used
         self.fairness_constraint = 'demographic_parity'
@@ -162,7 +166,8 @@ class RobustMetric:
                                              hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)':
+        elif self.model_type == ('Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or
+                                 'Stochastic Gradient Descent (SGD)'):
             self.baseline_model = self.model(max_iter=self.max_iter)
             self.baseline_model.fit(self.x_tr, self.y_tr)
 
@@ -199,7 +204,8 @@ class RobustMetric:
                                                   max_iter=self.max_iter, random_state=123)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)':
+        elif self.model_type == ('Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or
+                                 'Stochastic Gradient Descent (SGD)'):
             self.preprocessing_model = self.model(max_iter=self.max_iter)
             self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
@@ -227,7 +233,8 @@ class RobustMetric:
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or 'Logistic Regression (LR)':
+        elif self.model_type == ('Support Vector Classification (SVC)' or 'Logistic Regression (LR)' or
+                                 'Stochastic Gradient Descent (SGD)'):
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
@@ -335,13 +342,12 @@ class RobustMetric:
         completion_est = int((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60)
 
         print('Measuring fairness over all data-sets. Estimated time to completion: {} minutes from {}'
-              .format(completion_est, time. strftime("%H:%M:%S")))
+              .format(completion_est, time.strftime("%H:%M:%S")))
 
         # check fairness of each noise_level data set against each model
         start = time.time()
         for i in range(1, len(self.noise_level) + 1):
             for j in range(0, self.noise_iter):
-
                 # add the required noise to the data-set
                 x_te_noise = data_util.add_noise(self.x_te, self.cat, self.bounds, 1, self.noise_level[i - 1])[0]
 
