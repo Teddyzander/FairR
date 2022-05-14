@@ -376,7 +376,7 @@ class RobustMetric:
         for i in range(1, len(self.noise_level) + 1):
             for j in range(0, self.noise_iter):
                 # add the required noise to the data-set
-                x_te_noise = data_util.add_noise(self.x_te, self.cat, self.bounds, 1, self.noise_level[i - 1])[0]
+                x_te_noise = data_util.add_noise(self.x_te, self.cat, 1, self.noise_level[i - 1])[0]
 
                 fairness[0, i, j], fairness[1, i, j], \
                 fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_te_noise, self.y_te, self.sens_te)
