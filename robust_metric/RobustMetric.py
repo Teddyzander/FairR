@@ -20,7 +20,8 @@ class RobustMetric:
     """
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
-                 fairness_constraint='demographic_parity', max_iter=1000, noise_level=[1], noise_iter=1):
+                 fairness_constraint='demographic_parity', max_iter=1000, noise_level=[1], noise_iter=1,
+                 mlp_struct=(32, 16, 8, 4)):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -54,6 +55,7 @@ class RobustMetric:
         if model_type == 'MLP':
             self.model_type = 'Multilayer Perceptron (MLP)'
             self.model = MLPClassifier
+            self.mlp_struct = mlp_struct
         elif model_type == 'LR':
             self.model_type = 'Logistic Regression (LR)'
             self.model = LogisticRegression
@@ -168,7 +170,7 @@ class RobustMetric:
         # run the model with the training data
         if self.model_type == 'Multilayer Perceptron (MLP)':
             self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
-                                             hidden_layer_sizes=(32, 16, 8, 4, 2), random_state=123)
+                                             hidden_layer_sizes=self.mlp_struct, random_state=123)
 
         elif self.model_type == 'Support Vector Classification (SVC)' or \
                 self.model_type == 'Logistic Regression (LR)' or \
@@ -213,7 +215,7 @@ class RobustMetric:
 
         # fit the model on the preprocessed data
         if self.model_type == 'Multilayer Perceptron (MLP)':
-            self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(32, 16, 8, 4, 2),
+            self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=self.mlp_struct,
                                                   max_iter=self.max_iter, random_state=123)
 
         elif self.model_type == 'Support Vector Classification (SVC)' or \
@@ -249,7 +251,7 @@ class RobustMetric:
         # define the model
         if self.model_type == 'Multilayer Perceptron (MLP)':
             self.inprocessing_model = ExponentiatedGradient(self.model(solver='lbfgs', alpha=1e-5,
-                                                                       hidden_layer_sizes=(32, 16, 8, 4, 2),
+                                                                       hidden_layer_sizes=self.mlp_struct,
                                                                        max_iter=self.max_iter, random_state=123),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)

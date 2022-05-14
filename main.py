@@ -2,9 +2,11 @@ import argparse
 import numpy as np
 import os
 import warnings
+
+import data_util.fetch_data
 import data_util.plot_data as plot_data
 from robust_metric.RobustMetric import RobustMetric
-from fairlearn.datasets import fetch_adult, fetch_bank_marketing
+from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
 
 # Remove warnings from printed output
 warnings.filterwarnings("ignore")
@@ -49,22 +51,13 @@ if __name__ == '__main__':
     if args.dataset == 'adult':
         (data, target) = fetch_adult(return_X_y=True, as_frame=True)
         sens = 'sex'
+
     if args.dataset == 'bank':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V3'
+
         # This data set has a bad class ratio, so equalise it
-        ratio = target.value_counts()[0]/target.value_counts()[1]
-        index = np.zeros(target.value_counts()[1])
-        k = 0
-        for i in range(0, len(target)):
-            if target[i] == '2':
-                index[k] = i
-                k += 1
-        equalise_data = data.loc[index]
-        equalise_target = target[index]
-        for i in range(0, int(ratio)):
-            data = data.append(equalise_data)
-            target = target.append(equalise_target)
+        (data, target) = data_util.fetch_data.equalize_data(data, target)
 
     levels = np.arange(0.05, args.max_noise + 0.05, 0.05)
 

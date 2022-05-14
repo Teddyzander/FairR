@@ -190,6 +190,47 @@ def add_noise(data, cat, iter=10, level=1):
     return x_noise
 
 
+def equalize_data(data, target):
+    """
+    Checks if the target data is unbalanced. If so, copy instances of the underpresented class
+    :param data: input data
+    :param target: output data
+    :return: equalised input and output data
+    """
+    # Check ratio of one class against another
+    ratio = target.value_counts()[0] / target.value_counts()[1]
+
+    # preallocate memory to hold indices of underpresented class
+    index = np.zeros(target.value_counts()[1])
+    low_class = target.unique()[1]
+
+    # Swap the ratio around if first class is bigger than second class
+    if ratio < 1:
+        ratio = target.value_counts()[1] / target.value_counts()[0]
+        # preallocate memory to hold indices of underpresented class
+        index = np.zeros(target.value_counts()[0])
+        low_class = target.unique()[0]
+
+    # Only equalise if one class is >50% bigger than the other
+    ratio = int(ratio)
+
+    # Get indices of all occurrences of the underrepresented target class
+    k = 0
+    for i in range(0, len(target)):
+        if target[i] == low_class:
+            index[k] = i
+            k += 1
+
+    # add the underrepresented class to the data and target until ratio~1
+    equalise_data = data.loc[index]
+    equalise_target = target[index]
+    for i in range(0, ratio):
+        data = data.append(equalise_data)
+        target = target.append(equalise_target)
+
+    return data, target,
+
+
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
     data_noise = add_noise(data, cat, bounds, iter=10, level=0.00001)
