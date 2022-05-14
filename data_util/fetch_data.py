@@ -180,7 +180,7 @@ def add_noise(data, cat, bounds, iter=10, level=1):
         # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
         # a particular feature that will be randomly selected from a uniform distribution of all possible values
         for index in dis_index:
-            num_of_changes = int(0.01 * level * len(x))
+            num_of_changes = int(np.ceil(0.01 * level * len(x)))
             num_of_instances = np.arange(len(x))
             change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
             possible_values = data[:, index]
@@ -193,6 +193,6 @@ def add_noise(data, cat, bounds, iter=10, level=1):
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    data_noise = add_noise(data, cat, bounds, iter=10, level=0.1)
+    data_noise = add_noise(data, cat, bounds, iter=10, level=0.01)
 
     print('test done')
