@@ -16,7 +16,7 @@ parser.add_argument('--dataset', type=str, default='adult',
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
-parser.add_argument('--max_noise', type=int, default=20, help='maximum level of noise for test')
+parser.add_argument('--max_noise', type=float, default=20, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V3'
 
-    levels = np.arange(1, args.max_noise + 1, 0.2)
+    levels = np.arange(0.05, args.max_noise + 0.05, 0.05)
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
@@ -81,4 +81,5 @@ if __name__ == '__main__':
     test = np.load(directory + '.npy')
 
     plot_data.plot_data(test, levels, directory + '_figure', save=True,
+                        title='{} dataset with {}'.format(args.dataset, self.get_model_type()),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
