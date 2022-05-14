@@ -52,6 +52,19 @@ if __name__ == '__main__':
     if args.dataset == 'bank':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V3'
+        # This data set has a bad class ratio, so equalise it
+        ratio = target.value_counts()[0]/target.value_counts()[1]
+        index = np.zeros(target.value_counts()[1])
+        k = 0
+        for i in range(0, len(target)):
+            if target[i] == '2':
+                index[k] = i
+                k += 1
+        equalise_data = data.loc[index]
+        equalise_target = target[index]
+        for i in range(0, int(ratio)):
+            data = data.append(equalise_data)
+            target = target.append(equalise_target)
 
     levels = np.arange(0.05, args.max_noise + 0.05, 0.05)
 
