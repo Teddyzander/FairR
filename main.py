@@ -78,8 +78,8 @@ if __name__ == '__main__':
 
     np.save(directory, fairness)
 
-    test = np.load(directory + '.npy')
+    test_data = np.load(directory + '.npy')
 
-    plot_data.plot_data(test, levels, directory + '_figure', save=True,
-                        title='{} dataset with {}'.format(args.dataset, test.get_model_type()),
+    plot_data.plot_data(test_data, levels, directory + '_figure', save=True,
+                        title='{} dataset with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])

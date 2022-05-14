@@ -133,13 +133,6 @@ class RobustMetric:
 
         print('\n_________________________________________________')
 
-    def get_model_type(self):
-        """
-        Allows access to the type of model used for optimisation
-        :return: the string for the model type
-        """
-        return self.model_type
-
     def change_settings(self, new_max_iter=1000, new_noise_iter=10):
         """
         Change the maximum number of iterations for the optimisation problems
