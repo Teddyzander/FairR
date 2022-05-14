@@ -71,7 +71,8 @@ if __name__ == '__main__':
         # seperate inputs from outputs
         data = credit.iloc[:, :-1]
         target = credit.iloc[:, -1]
-        print(data.dtypes)
+
+        # sensitive attribute is marital status
         sens = 'i'
 
     levels = np.arange(0.05, args.max_noise + 0.05, 0.05)
