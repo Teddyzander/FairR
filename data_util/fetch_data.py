@@ -183,7 +183,7 @@ def add_noise(data, cat, bounds, iter=10, level=1):
             num_of_changes = int(0.01 * level * len(x))
             num_of_instances = np.arange(len(x))
             change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
-            possible_values = np.arange(bounds[index][0], bounds[index][1] + 1)
+            possible_values = data[:, index]
             x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)
 
         x_noise[n] = x
