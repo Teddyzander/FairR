@@ -53,8 +53,7 @@ if __name__ == '__main__':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
         sens = 'V3'
 
-    # levels = np.arange(1, args.max_noise + 1)
-    levels = np.arange(0.01, 7.51, 0.01)
+    levels = np.arange(1, args.max_noise + 1, 0.2)
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
