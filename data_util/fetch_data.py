@@ -193,6 +193,6 @@ def add_noise(data, cat, bounds, iter=10, level=1):
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    data_noise = add_noise(data, cat, bounds, iter=10, level=0.01)
+    data_noise = add_noise(data, cat, bounds, iter=10, level=0.00001)
 
     print('test done')
