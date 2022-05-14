@@ -37,6 +37,7 @@ def get_data_type(data):
     # split labels into continuous list and discrete list
     cont_labels = np.asarray(data.select_dtypes('number').columns)
     dis_labels = np.asarray(data.select_dtypes('category').columns)
+    dis_labels = np.concatenate((dis_labels, np.asarray(data.select_dtypes('object').columns)))
 
     # create list that defines all columns as either continuous 'c' or discrete 'd'
     for i in range(0, num_labels):

@@ -1,8 +1,9 @@
 import argparse
 import numpy as np
 import os
+import pandas as pd
+import string
 import warnings
-
 import data_util.fetch_data
 import data_util.plot_data as plot_data
 from robust_metric.RobustMetric import RobustMetric
@@ -58,6 +59,20 @@ if __name__ == '__main__':
 
         # This data set has a bad class ratio, so equalise it
         (data, target) = data_util.fetch_data.equalize_data(data, target)
+
+    if args.dataset == 'german':
+        credit = pd.read_csv('data_input/german.data', header=None, sep=' ')
+
+        # no headers given, so create them
+        headers = list(string.ascii_lowercase)
+        for i in range(0, len(credit.columns)):
+            credit = credit.rename({i: headers[i]}, axis=1)
+
+        # seperate inputs from outputs
+        data = credit.iloc[:, :-1]
+        target = credit.iloc[:, -1]
+        print(data.dtypes)
+        sens = 'i'
 
     levels = np.arange(0.05, args.max_noise + 0.05, 0.05)
 
