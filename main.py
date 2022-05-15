@@ -87,9 +87,11 @@ if __name__ == '__main__':
         dfRaw = pd.read_csv(dataURL)
 
         dfRaw = dfRaw.fillna(dfRaw.mean())
+        dfRaw = dfRaw.fillna(dfRaw.mode().iloc[0])
         dfRaw = dfRaw.dropna(axis=1)
         data = dfRaw.iloc[:, :-1]
         target = dfRaw.iloc[:, -1]
+
         sens = 'race'
 
     if args.dataset == 'german':
@@ -110,7 +112,7 @@ if __name__ == '__main__':
         # sensitive attribute is month
         sens = 'i'
 
-    levels = np.arange(0.05, args.max_noise + 0.05, 0.05)
+    levels = np.arange(1, args.max_noise + 1, 1)
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,

@@ -22,7 +22,7 @@ class RobustMetric:
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
                  fairness_constraint='demographic_parity', max_iter=1000, noise_level=[1], noise_iter=1,
-                 mlp_struct=(32, 16, 8, 4, 2)):
+                 mlp_struct=(32, 32, 16, 16, 8, 8, 4, 4, 2, 2)):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
