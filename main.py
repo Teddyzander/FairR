@@ -62,6 +62,26 @@ if __name__ == '__main__':
         # This data set has a bad class ratio, so equalise it
         (data, target) = data_util.fetch_data.equalize_data(data, target)
 
+    if args.dataset == 'boston':
+        (data, target) = fetch_boston(return_X_y=True, as_frame=True)
+        avg_data = np.mean(data['B'])
+        avg_target = np.mean(target)
+
+        # change to binary classifier with binary data
+        for i in range(0, len(target)):
+            if target[i] < avg_target:
+                target[i] = 0
+            else:
+                target[i] = 1
+
+        """
+            if data['B'][i] < avg_data:
+                data['B'][i] = 'A'
+            else:
+                data['B'][i] = 'B'
+"""
+        sens = 'B'
+
     if args.dataset == 'german':
         credit = pd.read_csv('data_input/german.data', header=None, sep=' ')
 
