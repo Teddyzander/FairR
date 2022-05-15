@@ -74,12 +74,11 @@ if __name__ == '__main__':
             else:
                 target[i] = 1
 
-        """
             if data['B'][i] < avg_data:
                 data['B'][i] = 'A'
             else:
                 data['B'][i] = 'B'
-"""
+
         sens = 'B'
 
     if args.dataset == 'german':
