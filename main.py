@@ -55,6 +55,8 @@ if __name__ == '__main__':
 
     if args.dataset == 'bank':
         (data, target) = fetch_bank_marketing(return_X_y=True, as_frame=True)
+
+        # sensitive attribute is race
         sens = 'V3'
 
         # This data set has a bad class ratio, so equalise it
@@ -72,7 +74,10 @@ if __name__ == '__main__':
         data = credit.iloc[:, :-1]
         target = credit.iloc[:, -1]
 
-        # sensitive attribute is marital status
+        # This data set has a bad class ratio, so equalise it
+        (data, target) = data_util.fetch_data.equalize_data(data, target)
+
+        # sensitive attribute is month
         sens = 'i'
 
     levels = np.arange(0.05, args.max_noise + 0.05, 0.05)

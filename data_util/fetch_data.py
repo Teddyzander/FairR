@@ -199,7 +199,10 @@ def equalize_data(data, target):
     :return: equalised input and output data
     """
     # Check ratio of one class against another
-    ratio = target.value_counts()[0] / target.value_counts()[1]
+    try:
+        ratio = target.value_counts()[0] / target.value_counts()[1]
+    except:
+        ratio = target.value_counts()[1] / target.value_counts()[2]
 
     # preallocate memory to hold indices of underpresented class
     index = np.zeros(target.value_counts()[1])

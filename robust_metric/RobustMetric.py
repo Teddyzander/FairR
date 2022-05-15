@@ -21,7 +21,7 @@ class RobustMetric:
 
     def __init__(self, data=None, target=None, sens='sex', model_type='SVC',
                  fairness_constraint='demographic_parity', max_iter=1000, noise_level=[1], noise_iter=1,
-                 mlp_struct=(32, 16, 8, 4)):
+                 mlp_struct=(32, 16, 8, 4, 2)):
         """
         Function to initialise a robustness metric class, which can measure the fairness and robustness of a
         learning method with a specific fairness constraint with a selected data set.
@@ -290,9 +290,7 @@ class RobustMetric:
         self.postprocessing_model = ThresholdOptimizer(
             estimator=self.baseline_model,
             constraints=self.fairness_constraint,
-            objective="accuracy_score",
-            prefit=True,
-            predict_method='predict')
+            prefit=True)
 
         # fit the postprocessing model with the allocated fairness constraint
         self.postprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
