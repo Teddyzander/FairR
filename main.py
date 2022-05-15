@@ -8,6 +8,7 @@ import data_util.fetch_data
 import data_util.plot_data as plot_data
 from robust_metric.RobustMetric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
+from sklearn.impute import SimpleImputer
 
 # Remove warnings from printed output
 warnings.filterwarnings("ignore")
@@ -80,6 +81,16 @@ if __name__ == '__main__':
                 data['B'][i] = 'B'
 
         sens = 'B'
+
+    if args.dataset == 'compas':
+        dataURL = 'https://raw.githubusercontent.com/propublica/compas-analysis/master/compas-scores-two-years.csv'
+        dfRaw = pd.read_csv(dataURL)
+
+        dfRaw = dfRaw.fillna(dfRaw.mean())
+        dfRaw = dfRaw.dropna(axis=1)
+        data = dfRaw.iloc[:, :-1]
+        target = dfRaw.iloc[:, -1]
+        sens = 'race'
 
     if args.dataset == 'german':
         credit = pd.read_csv('data_input/german.data', header=None, sep=' ')

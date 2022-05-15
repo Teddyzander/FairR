@@ -69,8 +69,6 @@ def standardise_data(data, dis_labels, con_labels):
         std = values.std()
         data[label] = ((values - mean) / std).tolist()
 
-    print(data.dtypes)
-
     return data
 
 

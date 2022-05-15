@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.impute import SimpleImputer
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity, \
