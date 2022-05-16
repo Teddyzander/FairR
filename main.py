@@ -103,9 +103,6 @@ if __name__ == '__main__':
 
         data = data.drop(labels='id', axis=1)
 
-        print(data.isna().sum().sum())
-        print(target.isna().sum().sum())
-
         sens = 'race'
 
     if args.dataset == 'german':
