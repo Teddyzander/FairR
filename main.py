@@ -145,9 +145,9 @@ if __name__ == '__main__':
     test_data = np.load(directory + '.npy')
 
 
-    """plot_data.plot_data(test_data, levels, directory + '_fairness_figure', save=True,
+    plot_data.plot_data(test_data, levels, directory + '_fairness_figure', save=True,
                         title='Fairness of {} dataset with {}'.format(args.dataset, test.model_type),
-                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])"""
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
     robustness = np.zeros(test_data.shape)
     for i in range(0, robustness.shape[0]):
