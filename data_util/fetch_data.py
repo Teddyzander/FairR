@@ -69,7 +69,18 @@ def standardise_data(data, dis_labels, con_labels):
         std = values.std()
         data[label] = ((values - mean) / std).tolist()
 
+        # normalise the data
+        data[label] = normalise_data(data[label])
+
     return data
+
+
+def normalise_data(data):
+
+    data_max = data.max()
+    data_min = data.min()
+
+    return (data - data_max) / (data_max - data_min)
 
 
 def get_bounds(data):

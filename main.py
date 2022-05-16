@@ -20,7 +20,7 @@ parser.add_argument('--dataset', type=str, default='adult',
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
-parser.add_argument('--max_noise', type=float, default=20, help='maximum level of noise for test')
+parser.add_argument('--max_noise', type=float, default=10, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
@@ -92,6 +92,8 @@ if __name__ == '__main__':
         data = dfRaw.iloc[:, :-1]
         target = dfRaw.iloc[:, -1]
 
+        data = data.drop(labels='id', axis=1)
+
         sens = 'race'
 
     if args.dataset == 'german':
@@ -112,9 +114,9 @@ if __name__ == '__main__':
         # sensitive attribute is month
         sens = 'i'
 
-    levels = np.arange(1, args.max_noise + 1, 1)
+    levels = np.arange(0.25, args.max_noise + 0.25, 0.25)
 
-    test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
+    """test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
                         noise_iter=args.noise_iters)
     test.split_data()
@@ -130,15 +132,27 @@ if __name__ == '__main__':
 
     fairness = test.measure_total_fairness()
 
-    test.summary()
+    test.summary()"""
 
     directory = '{}/fairness_{}_{}_{}_data'.format(args.output_dir, args.dataset,
                                                    args.model_type, args.train_constraint)
 
-    np.save(directory, fairness)
+    # np.save(directory, fairness)
 
     test_data = np.load(directory + '.npy')
 
-    plot_data.plot_data(test_data, levels, directory + '_figure', save=True,
-                        title='{} dataset with {}'.format(args.dataset, test.model_type),
-                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])
+
+    """plot_data.plot_data(test_data, levels, directory + '_fairness_figure', save=True,
+                        title='Fairness of {} dataset with {}'.format(args.dataset, test.model_type),
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])"""
+
+    robustness = np.zeros(test_data.shape)
+    for i in range(0, robustness.shape[0]):
+        mean_noiseless = np.mean(test_data[i, 0, 0])
+        for j in range(0, robustness.shape[1]):
+            for k in range(0, robustness.shape[2]):
+                robustness[i, j, k] = np.abs(1 - np.abs((mean_noiseless - test_data[i, j, k]) / mean_noiseless))
+
+    plot_data.plot_data(robustness, levels, directory + '_robustness_figure_rel_log_2', save=True,
+                        title='Robustness of {} dataset with {}'.format(args.dataset, 'LR'),
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint], log=True)
