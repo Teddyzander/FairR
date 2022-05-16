@@ -44,6 +44,12 @@ def plot_data(data, noise_levels, name='figure',
     plt.xlabel(x_label)
     plt.ylabel('Difference of {}'.format(y_label))
 
+    if log:
+        plt.grid(axis='y')
+
+    else:
+        plt.grid()
+
     if title is not None:
         plt.title(title)
 

@@ -179,7 +179,7 @@ class RobustMetric:
             self.baseline_model = self.model(max_iter=self.max_iter)
 
         elif self.model_type == 'Decision Tree Classifier (DTC)':
-            self.baseline_model = self.model()
+            self.baseline_model = self.model(criterion='entropy', random_state=123)
 
         self.baseline_model.fit(self.x_tr, self.y_tr)
 
@@ -225,7 +225,7 @@ class RobustMetric:
             self.preprocessing_model = self.model(max_iter=self.max_iter)
 
         elif self.model_type == 'Decision Tree Classifier (DTC)':
-            self.preprocessing_model = self.model()
+            self.preprocessing_model = self.model(criterion='entropy', random_state=123)
 
         self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
@@ -265,7 +265,7 @@ class RobustMetric:
                                                             eps=eps, nu=nu, max_iter=50)
 
         elif self.model_type == 'Decision Tree Classifier (DTC)':
-            self.inprocessing_model = ExponentiatedGradient(self.model(),
+            self.inprocessing_model = ExponentiatedGradient(self.model(criterion='entropy', random_state=123),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 

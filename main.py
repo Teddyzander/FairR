@@ -6,9 +6,10 @@ import string
 import warnings
 import data_util.fetch_data
 import data_util.plot_data as plot_data
+from zipfile import ZipFile
 from robust_metric.RobustMetric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
-from sklearn.impute import SimpleImputer
+from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage
 
 # Remove warnings from printed output
 warnings.filterwarnings("ignore")
@@ -20,8 +21,8 @@ parser.add_argument('--dataset', type=str, default='adult',
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
-parser.add_argument('--max_noise', type=float, default=10, help='maximum level of noise for test')
-parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
+parser.add_argument('--max_noise', type=float, default=30, help='maximum level of noise for test')
+parser.add_argument('--noise_iters', type=int, default=20, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
                                                                   'including SVC, MLP, LR, SGD, DTC')
@@ -47,10 +48,10 @@ if __name__ == '__main__':
 
     # if the specified directory doesn't exist, we need to create it
     if not os.path.exists(args.output_dir + '/fairness'):
-        os.makedirs(args.output_dir)
+        os.makedirs(args.output_dir + '/fairness')
 
     if not os.path.exists(args.output_dir + '/robustness'):
-        os.makedirs(args.output_dir)
+        os.makedirs(args.output_dir + '/robustness')
 
     # set up variables from arguments
     if args.dataset == 'adult':
@@ -89,7 +90,7 @@ if __name__ == '__main__':
         dataURL = 'https://raw.githubusercontent.com/propublica/compas-analysis/master/compas-scores-two-years.csv'
         dfRaw = pd.read_csv(dataURL)
 
-        dfRaw = dfRaw.fillna(dfRaw.mean())
+        dfRaw = dfRaw.fillna(-1)
         dfRaw = dfRaw.fillna(dfRaw.mode().iloc[0])
         dfRaw = dfRaw.dropna(axis=1)
         data = dfRaw.iloc[:, :-1]
@@ -117,7 +118,23 @@ if __name__ == '__main__':
         # sensitive attribute is month
         sens = 'i'
 
-    levels = np.arange(0.25, args.max_noise + 0.25, 0.25)
+    if args.dataset == 'employ':
+
+        cali_data = pd.read_csv('data_input/psam_p06.csv')
+        all_data = cali_data[cali_data.columns.intersection(ACSEmployment.features)]
+        all_target = cali_data[ACSEmployment.target]
+        combine = pd.concat([all_data, all_target], axis=1)
+        combine = combine.fillna(0)
+        combine = combine.dropna(axis=0)
+
+        data = combine.iloc[:, :-1]
+        target = combine.iloc[:, -1]
+
+        target = (target != 1).astype(int)
+
+        sens = 'RAC1P'
+
+    levels = np.arange(0.5, args.max_noise + 0.5, 0.5)
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
@@ -137,25 +154,27 @@ if __name__ == '__main__':
 
     test.summary()
 
-    directory = '{}/fairness_{}_{}_{}_data'.format(args.output_dir, args.dataset,
-                                                   args.model_type, args.train_constraint)
+    directory_fairness = '{}/fairness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
+                                                            args.model_type, args.train_constraint)
 
-    # np.save(directory, fairness)
+    directory_robustness = '{}/robustness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
+                                                                args.model_type, args.train_constraint)
 
-    test_data = np.load(directory + '.npy')
+    np.save(directory_fairness, fairness)
 
+    test_data = np.load(directory_fairness + '.npy')
 
-    plot_data.plot_data(test_data, levels, directory + '_fairness_figure', save=True,
+    plot_data.plot_data(test_data, levels, directory_fairness + '_fairness_figure', save=True,
                         title='Fairness of {} dataset with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
     robustness = np.zeros(test_data.shape)
     for i in range(0, robustness.shape[0]):
-        mean_noiseless = np.mean(test_data[i, 0, 0])
+        mean_noiseless = np.mean(test_data[i, 0, :])
         for j in range(0, robustness.shape[1]):
             for k in range(0, robustness.shape[2]):
-                robustness[i, j, k] = np.abs(1 - np.abs((mean_noiseless - test_data[i, j, k]) / mean_noiseless))
+                robustness[i, j, k] = 1 - ((mean_noiseless - test_data[i, j, k]) / mean_noiseless)
 
-    plot_data.plot_data(robustness, levels, directory + '_robustness_figure_rel_log_2', save=True,
+    plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
                         title='Robustness of {} dataset with {}'.format(args.dataset, 'LR'),
-                        x_label='Noise Level', y_label=full_constraints[args.train_constraint], log=True)
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])

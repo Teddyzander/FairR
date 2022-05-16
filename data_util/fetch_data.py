@@ -64,10 +64,10 @@ def standardise_data(data, dis_labels, con_labels):
 
     # standardise the continuous labels such that each feature has mean 0 and variance 1
     for label in con_labels:
-        values = data[label]
+        """values = data[label]
         mean = values.mean()
         std = values.std()
-        data[label] = ((values - mean) / std).tolist()
+        data[label] = ((values - mean) / std).tolist()"""
 
         # normalise the data
         data[label] = normalise_data(data[label])
@@ -77,10 +77,10 @@ def standardise_data(data, dis_labels, con_labels):
 
 def normalise_data(data):
 
-    data_max = data.max()
-    data_min = data.min()
+    data_max = np.max(data)
+    data_min = np.min(data)
 
-    return (data - data_max) / (data_max - data_min)
+    return (data - data_min) / (data_max - data_min)
 
 
 def get_bounds(data):
