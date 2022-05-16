@@ -46,7 +46,10 @@ if __name__ == '__main__':
                   args.max_noise, args.noise_iters, args.model_iters))
 
     # if the specified directory doesn't exist, we need to create it
-    if not os.path.exists(args.output_dir):
+    if not os.path.exists(args.output_dir + '/fairness'):
+        os.makedirs(args.output_dir)
+
+    if not os.path.exists(args.output_dir + '/robustness'):
         os.makedirs(args.output_dir)
 
     # set up variables from arguments
@@ -116,7 +119,7 @@ if __name__ == '__main__':
 
     levels = np.arange(0.25, args.max_noise + 0.25, 0.25)
 
-    """test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
+    test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
                         noise_iter=args.noise_iters)
     test.split_data()
@@ -132,7 +135,7 @@ if __name__ == '__main__':
 
     fairness = test.measure_total_fairness()
 
-    test.summary()"""
+    test.summary()
 
     directory = '{}/fairness_{}_{}_{}_data'.format(args.output_dir, args.dataset,
                                                    args.model_type, args.train_constraint)
