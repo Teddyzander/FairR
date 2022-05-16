@@ -1,0 +1,2 @@
+data_input/psam_p06.csv filter=lfs diff=lfs merge=lfs -text
+data_input/german.data filter=lfs diff=lfs merge=lfs -text
