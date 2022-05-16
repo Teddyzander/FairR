@@ -79,8 +79,12 @@ def normalise_data(data):
 
     data_max = np.max(data)
     data_min = np.min(data)
+    if data_max == data_min:
+        data = 0
+    else:
+        data = (data - data_min) / (data_max - data_min)
 
-    return (data - data_min) / (data_max - data_min)
+    return data
 
 
 def get_bounds(data):

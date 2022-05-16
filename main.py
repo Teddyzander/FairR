@@ -90,6 +90,11 @@ if __name__ == '__main__':
         dataURL = 'https://raw.githubusercontent.com/propublica/compas-analysis/master/compas-scores-two-years.csv'
         dfRaw = pd.read_csv(dataURL)
 
+        # check if entire column is NaN. If so, drop it
+        dfRaw = dfRaw.dropna(axis=1, how='all')
+
+        # any individual NaN fields fill with mean
+        dfRaw.apply(lambda x: x.fillna(x.mode()), axis=0)
         dfRaw = dfRaw.fillna(-1)
         dfRaw = dfRaw.fillna(dfRaw.mode().iloc[0])
         dfRaw = dfRaw.dropna(axis=1)
@@ -97,6 +102,9 @@ if __name__ == '__main__':
         target = dfRaw.iloc[:, -1]
 
         data = data.drop(labels='id', axis=1)
+
+        print(data.isna().sum().sum())
+        print(target.isna().sum().sum())
 
         sens = 'race'
 
