@@ -6,7 +6,6 @@ import string
 import warnings
 import data_util.fetch_data
 import data_util.plot_data as plot_data
-from zipfile import ZipFile
 from robust_metric.RobustMetric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
 from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage
@@ -156,6 +155,7 @@ if __name__ == '__main__':
     print('Post-processing accuracy score: ' + str(score_post))
 
     fairness = test.measure_total_fairness()
+    robustness = test.measure_robustness()
 
     test.summary()
 
@@ -166,20 +166,12 @@ if __name__ == '__main__':
                                                                 args.model_type, args.train_constraint)
 
     np.save(directory_fairness, fairness)
+    np.save(directory_robustness, robustness)
 
-    test_data = np.load(directory_fairness + '.npy')
-
-    plot_data.plot_data(test_data, levels, directory_fairness + '_fairness_figure', save=True,
+    plot_data.plot_data(fairness, levels, directory_fairness + '_fairness_figure', save=True,
                         title='Fairness of {} dataset with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
-    robustness = np.zeros(test_data.shape)
-    for i in range(0, robustness.shape[0]):
-        mean_noiseless = np.mean(test_data[i, 0, :])
-        for j in range(0, robustness.shape[1]):
-            for k in range(0, robustness.shape[2]):
-                robustness[i, j, k] = 1 - ((mean_noiseless - test_data[i, j, k]) / mean_noiseless)
-
     plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
-                        title='Robustness of {} dataset with {}'.format(args.dataset, 'LR'),
+                        title='Robustness of {} dataset with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
