@@ -6,7 +6,6 @@ import string
 import warnings
 import data_util.fetch_data
 import data_util.plot_data as plot_data
-import pickle
 from robust_metric.RobustMetric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
 from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage
@@ -167,11 +166,12 @@ if __name__ == '__main__':
                                                                 args.model_type, args.train_constraint)
 
     np.save(directory_fairness, fairness)
+    np.save(directory_robustness, robustness)
 
     plot_data.plot_data(fairness, levels, directory_fairness + '_fairness_figure', save=True,
                         title='Fairness of {} dataset with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
     plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
-                        title='Robustness of {} dataset with {}'.format(args.dataset, 'LR'),
+                        title='Robustness of {} dataset with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])

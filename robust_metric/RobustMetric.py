@@ -399,7 +399,7 @@ class RobustMetric:
         Measures how resistant to noise the model is
         :return: robust matrix
         """
-        robustness = np.shape(self.fairness)
+        robustness = np.zeros(self.fairness.shape)
         for i in range(0, robustness.shape[0]):
             mean_noiseless = np.mean(self.fairness[i, 0, :])
             for j in range(0, robustness.shape[1]):
@@ -415,7 +415,7 @@ class RobustMetric:
         Measures how resistant to noise the model is, relative to the initial fairness model
         :return: relative robust matrix
         """
-        robustness = np.shape(self.fairness)
+        robustness = np.zeros(self.fairness.shape)
         for i in range(0, robustness.shape[0]):
             mean_noiseless = np.mean(self.fairness[i, 0, :])
             for j in range(0, robustness.shape[1]):
