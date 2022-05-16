@@ -108,6 +108,10 @@ class RobustMetric:
         self.preprocessing_model = None
         self.postprocessing_model = None
 
+        # define variables to hold fairness and robustness
+        self.fairness = []
+        self.robustness = []
+
     def summary(self):
         """
         Shows summary of the instance's settings
@@ -381,8 +385,44 @@ class RobustMetric:
 
                 fairness[0, i, j], fairness[1, i, j], \
                 fairness[2, i, j], fairness[3, i, j] = self.measure_fairness(x_te_noise, self.y_te, self.sens_te)
+
         end = time.time()
 
         print('{:.4f} s'.format(end - start))
 
-        return fairness
+        self.fairness = fairness
+
+        return self.fairness
+
+    def measure_robustness(self):
+        """
+        Measures how resistant to noise the model is
+        :return: robust matrix
+        """
+        robustness = np.shape(self.fairness)
+        for i in range(0, robustness.shape[0]):
+            mean_noiseless = np.mean(self.fairness[i, 0, :])
+            for j in range(0, robustness.shape[1]):
+                for k in range(0, robustness.shape[2]):
+                    robustness[i, j, k] = np.abs(mean_noiseless - self.fairness[i, j, k])
+
+        self.robustness = robustness
+
+        return self.robustness
+
+    def measure_relative_robustness(self):
+        """
+        Measures how resistant to noise the model is, relative to the initial fairness model
+        :return: relative robust matrix
+        """
+        robustness = np.shape(self.fairness)
+        for i in range(0, robustness.shape[0]):
+            mean_noiseless = np.mean(self.fairness[i, 0, :])
+            for j in range(0, robustness.shape[1]):
+                for k in range(0, robustness.shape[2]):
+                    robustness[i, j, k] = 1 - np.abs((mean_noiseless - self.fairness[i, j, k]) / mean_noiseless)
+
+        self.robustness = robustness
+
+        return self.robustness
+
