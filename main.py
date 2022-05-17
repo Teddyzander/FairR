@@ -126,7 +126,6 @@ if __name__ == '__main__':
         sens = 'i'
 
     if args.dataset == 'employ':
-
         cali_data = pd.read_csv('data_input/psam_p06.csv')
         all_data = cali_data[cali_data.columns.intersection(ACSEmployment.features)]
         all_target = cali_data[ACSEmployment.target]
@@ -140,6 +139,79 @@ if __name__ == '__main__':
         target = (target != 1).astype(int)
 
         sens = 'RAC1P'
+
+    if args.dataset == 'fair':
+        data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000)])
+
+        data = np.transpose(data)
+
+        target = np.transpose(np.array(np.random.choice([0, 1], size=5000)))
+
+        data = pd.DataFrame(data,
+                            columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                                     'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'])
+
+        target = pd.Series(target)
+
+        for col in ['K', 'L', 'M', 'N', 'O', 'P', 'Q']:
+            data[col] = data[col].astype('category')
+
+        sens = 'Q'
+
+    if args.dataset == 'unfair':
+        data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.normal(loc=0.0, scale=1.0, size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000),
+                           np.random.choice([0, 1], size=5000)])
+
+        data = np.transpose(data)
+
+        target = np.transpose(np.array(np.random.choice([0, 1], size=5000)))
+
+        for row in range(0, 5000):
+            for col in range(0, 10):
+                if data[row, 16] == 1:
+                    data[row, col] += 20
+
+        data = pd.DataFrame(data,
+                            columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                                     'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'])
+
+        target = pd.Series(target)
+
+        for col in ['K', 'L', 'M', 'N', 'O', 'P', 'Q']:
+            data[col] = data[col].astype('category')
+
+        sens = 'Q'
 
     levels = np.arange(0.01, args.max_noise + 0.01, 0.01)
 
@@ -170,7 +242,7 @@ if __name__ == '__main__':
                                                                 args.model_type, args.train_constraint)
 
     directory_rel_robustness = '{}/relative_robustness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
-                                                                args.model_type, args.train_constraint)
+                                                                             args.model_type, args.train_constraint)
 
     np.save(directory_fairness, fairness)
     np.save(directory_robustness, robustness)
@@ -186,3 +258,16 @@ if __name__ == '__main__':
     plot_data.plot_data(rel_robustness, levels, directory_rel_robustness + '_rel_robustness_figure', save=True,
                         title='Relative Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
+
+    fairness2 = np.array([0, 0, 0, 0], dtype=float)
+
+    for i in range(0, 20):
+        fair_data = data_util.fetch_data.get_fair_data(test.x_te, test.cat, test.bounds)
+        fair_target = np.random.choice(np.arange(test.y_te.min(), test.y_te.max() + 1), size=len(test.y_te))
+        fair_sens = np.random.choice(np.arange(test.sens_te.min(), test.sens_te.max() + 1), size=len(test.sens_te))
+
+        temp = np.array(test.measure_fairness(fair_data, fair_target, fair_sens), dtype=float)
+        temp = temp / 100
+        fairness2[:] += temp[:]
+
+    print('DONE')
