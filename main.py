@@ -20,8 +20,8 @@ parser.add_argument('--dataset', type=str, default='adult',
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
-parser.add_argument('--max_noise', type=float, default=30, help='maximum level of noise for test')
-parser.add_argument('--noise_iters', type=int, default=20, help='Number of data samples per noise level')
+parser.add_argument('--max_noise', type=float, default=1, help='maximum level of noise for test')
+parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
                                                                   'including SVC, MLP, LR, SGD, DTC')
@@ -51,6 +51,9 @@ if __name__ == '__main__':
 
     if not os.path.exists(args.output_dir + '/robustness'):
         os.makedirs(args.output_dir + '/robustness')
+
+    if not os.path.exists(args.output_dir + '/relative_robustness'):
+        os.makedirs(args.output_dir + '/relative_robustness')
 
     # set up variables from arguments
     if args.dataset == 'adult':
@@ -138,7 +141,7 @@ if __name__ == '__main__':
 
         sens = 'RAC1P'
 
-    levels = np.arange(0.5, args.max_noise + 0.5, 0.5)
+    levels = np.arange(0.01, args.max_noise + 0.01, 0.01)
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
@@ -156,6 +159,7 @@ if __name__ == '__main__':
 
     fairness = test.measure_total_fairness()
     robustness = test.measure_robustness()
+    rel_robustness = test.measure_relative_robustness()
 
     test.summary()
 
@@ -165,13 +169,20 @@ if __name__ == '__main__':
     directory_robustness = '{}/robustness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
                                                                 args.model_type, args.train_constraint)
 
+    directory_rel_robustness = '{}/relative_robustness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
+                                                                args.model_type, args.train_constraint)
+
     np.save(directory_fairness, fairness)
     np.save(directory_robustness, robustness)
 
     plot_data.plot_data(fairness, levels, directory_fairness + '_fairness_figure', save=True,
-                        title='Fairness of {} dataset with {}'.format(args.dataset, test.model_type),
+                        title='Fairness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
     plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
-                        title='Robustness of {} dataset with {}'.format(args.dataset, test.model_type),
+                        title='Robustness of {} with {}'.format(args.dataset, test.model_type),
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])
+
+    plot_data.plot_data(rel_robustness, levels, directory_rel_robustness + '_rel_robustness_figure', save=True,
+                        title='Relative Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])

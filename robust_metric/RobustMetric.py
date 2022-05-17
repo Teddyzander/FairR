@@ -420,7 +420,7 @@ class RobustMetric:
             mean_noiseless = np.mean(self.fairness[i, 0, :])
             for j in range(0, robustness.shape[1]):
                 for k in range(0, robustness.shape[2]):
-                    robustness[i, j, k] = 1 - np.abs((mean_noiseless - self.fairness[i, j, k]) / mean_noiseless)
+                    robustness[i, j, k] = np.abs(1 - ((mean_noiseless - self.fairness[i, j, k]) / mean_noiseless))
 
         self.robustness = robustness
 
