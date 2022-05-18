@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import statistics as stats
 from fairlearn.datasets import fetch_adult
 from sklearn.model_selection import train_test_split
 
@@ -288,6 +289,7 @@ def get_fair_data(data, cat, bound):
         x[change_ind, idx] = np.random.choice(a, size=size)
 
     return x
+
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
