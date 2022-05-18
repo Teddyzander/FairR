@@ -293,7 +293,13 @@ def get_fair_data(data, cat, bound):
 
     return x
 
+
 def get_data(name):
+    """
+    Fetch the relevant data
+    :param name: name of the dataset
+    :return: the input data, the output (target) data, name of the sensitive column
+    """
     # set up variables from arguments
     if name == 'adult':
         (data, target) = fetch_adult(return_X_y=True, as_frame=True)
