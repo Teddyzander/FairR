@@ -206,14 +206,14 @@ if __name__ == '__main__':
         for row in range(0, size):
             for col in range(0, 10):
                 if data[row, 16] == 1:
-                    data[row, col] = np.random.normal(loc=10, scale=1.0)
-                else:
-                    data[row, col] = np.random.normal(loc=-10, scale=2.0)
-            for col in range(10, 15):
+                    data[row, 0] = np.random.normal(loc=0.5, scale=1.0)
+                """else:
+                    data[row, col] = np.random.normal(loc=-10, scale=2.0)"""
+            """for col in range(10, 15):
                 if data[row, 16] == 1:
                     data[row, col] = np.random.choice([0, 0, 0, 0, 0, 0, 0, 0, 1, 1], replace=True)
                 else:
-                    data[row, col] = np.random.choice([0, 0, 1, 1, 1, 1, 1, 1, 1, 1], replace=True)
+                    data[row, col] = np.random.choice([0, 0, 1, 1, 1, 1, 1, 1, 1, 1], replace=True)"""
 
         data = pd.DataFrame(data,
                             columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
