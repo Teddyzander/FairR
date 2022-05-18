@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import statistics as stats
 from fairlearn.datasets import fetch_adult
 from sklearn.model_selection import train_test_split
 
@@ -249,9 +251,50 @@ def equalize_data(data, target):
 
     return data, target,
 
+def get_fair_data(data, cat, bound):
+    """
+    Adds noise to the input data. Continuous data has laplacian noise added with mean 0 and var=level. Discrete data
+    has level/len(data) of the values uniformly randomly selected from all possible values the variable could take
+    :param data: Input data
+    :param cat: category of data - [d] for discrete, [c] for continuous
+    :param iter: Number of noisy instances we want with the selected level
+    :param level: noise level
+    :return: list of noisy data
+    """
+
+    # get indices of where continuous [c] data appears and discrete [d] data appears
+    con_index = [None] * cat.count('c')
+    dis_index = [None] * cat.count('d')
+
+    # Find indices of discrete and continuous data
+    con_index_count = 0
+    dis_index_count = 0
+    for index in range(0, len(cat)):
+        if cat[index] == 'c':
+            con_index[con_index_count] = index
+            con_index_count += 1
+        else:
+            dis_index[dis_index_count] = index
+            dis_index_count += 1
+
+    x = data.copy()
+    if len(con_index) > 0:
+        x[con_index, :] = random.uniform(0, 1)
+
+    for idx in dis_index:
+        size = len(x)
+        tmp = np.arange(len(x))
+        change_ind = np.random.choice(tmp, size=size, replace=False)
+        a = np.arange(bound[idx][0], bound[idx][1] + 1)
+        x[change_ind, idx] = np.random.choice(a, size=size)
+
+    return x
+
 
 if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
-    data_noise = add_noise(data, cat, bounds, iter=10, level=0.00001)
+    data_noise = add_noise(data, cat, iter=10, level=0.00001)
+    rand_data = get_fair_data(data, cat, bounds)
+    rand_target = np.random.choice(np.arange(target.min(), target.max()+1), size=len(target))
 
     print('test done')

@@ -9,6 +9,7 @@ import data_util.plot_data as plot_data
 from robust_metric.RobustMetric import RobustMetric
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
 from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage
+from scipy.stats import skewnorm
 
 # Remove warnings from printed output
 warnings.filterwarnings("ignore")
@@ -20,6 +21,7 @@ parser.add_argument('--dataset', type=str, default='adult',
 parser.add_argument('--train_constraint', type=str, default='dp',
                     help='using which constraint to train the model, including eo, dp, fp, tp')
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
+parser.add_argument('--min_noise', type=float, default=0.01, help='minimum level of noise for test')
 parser.add_argument('--max_noise', type=float, default=1, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
@@ -126,7 +128,6 @@ if __name__ == '__main__':
         sens = 'i'
 
     if args.dataset == 'employ':
-
         cali_data = pd.read_csv('data_input/psam_p06.csv')
         all_data = cali_data[cali_data.columns.intersection(ACSEmployment.features)]
         all_target = cali_data[ACSEmployment.target]
@@ -141,7 +142,91 @@ if __name__ == '__main__':
 
         sens = 'RAC1P'
 
-    levels = np.arange(0.01, args.max_noise + 0.01, 0.01)
+    if args.dataset == 'fair':
+        size = 20000
+        np.random.seed(123)
+        data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size)])
+
+        data = np.transpose(data)
+
+        target = np.transpose(np.array(np.random.choice([0, 1], size=size)))
+
+        data = pd.DataFrame(data,
+                            columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                                     'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'])
+
+        target = pd.Series(target)
+
+        for col in ['K', 'L', 'M', 'N', 'O', 'P', 'Q']:
+            data[col] = data[col].astype('category')
+
+        sens = 'Q'
+
+    if args.dataset == 'unfair':
+        size = 20000
+        np.random.seed(123)
+        data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size),
+                           np.random.choice([0, 1], size=size)])
+
+        data = np.transpose(data)
+
+        target = np.transpose(np.array(np.random.choice([0, 1], size=size)))
+
+        for row in range(0, size):
+            for col in range(0, 10):
+                if data[row, 16] == 1:
+                    data[row, 0] = np.random.normal(loc=0.5, scale=1.0)
+                """else:
+                    data[row, col] = np.random.normal(loc=-10, scale=2.0)"""
+            """for col in range(10, 15):
+                if data[row, 16] == 1:
+                    data[row, col] = np.random.choice([0, 0, 0, 0, 0, 0, 0, 0, 1, 1], replace=True)
+                else:
+                    data[row, col] = np.random.choice([0, 0, 1, 1, 1, 1, 1, 1, 1, 1], replace=True)"""
+
+        data = pd.DataFrame(data,
+                            columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                                     'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'])
+
+        target = pd.Series(target)
+
+        for col in ['K', 'L', 'M', 'N', 'O', 'P', 'Q']:
+            data[col] = data[col].astype('category')
+
+        sens = 'Q'
+
+    levels = np.arange(args.min_noise, args.max_noise + args.min_noise, args.min_noise)
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
@@ -170,7 +255,7 @@ if __name__ == '__main__':
                                                                 args.model_type, args.train_constraint)
 
     directory_rel_robustness = '{}/relative_robustness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
-                                                                args.model_type, args.train_constraint)
+                                                                             args.model_type, args.train_constraint)
 
     np.save(directory_fairness, fairness)
     np.save(directory_robustness, robustness)
@@ -181,8 +266,12 @@ if __name__ == '__main__':
 
     plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
                         title='Robustness of {} with {}'.format(args.dataset, test.model_type),
-                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint],
+                        x_lim=[args.min_noise, args.max_noise])
 
     plot_data.plot_data(rel_robustness, levels, directory_rel_robustness + '_rel_robustness_figure', save=True,
                         title='Relative Robustness of {} with {}'.format(args.dataset, test.model_type),
-                        x_label='Noise Level', y_label=full_constraints[args.train_constraint])
+                        x_label='Noise Level', y_label=full_constraints[args.train_constraint],
+                        x_lim=[args.min_noise, args.max_noise])
+
+    print('DONE')
