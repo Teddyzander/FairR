@@ -22,8 +22,8 @@ parser.add_argument('--train_constraint', type=str, default='dp',
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
 parser.add_argument('--min_noise', type=float, default=0.01, help='minimum level of noise for test')
 parser.add_argument('--max_noise', type=float, default=1, help='maximum level of noise for test')
-parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
-parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
+parser.add_argument('--noise_iters', type=int, default=1, help='Number of data samples per noise level')
+parser.add_argument('--model_iters', type=int, default=4000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
                                                                   'including SVC, MLP, LR, SGD, DTC')
 args = parser.parse_args()

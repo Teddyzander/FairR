@@ -81,7 +81,6 @@ def standardise_data(data, dis_labels, con_labels):
 
 
 def normalise_data(data):
-
     data_max = np.max(data)
     data_min = np.min(data)
     if data_max == data_min:
@@ -161,7 +160,7 @@ def fetch_adult_data(sens='sex'):
     return data, target, sensitive, cat, bounds
 
 
-def add_noise(data, cat, iter=10, level=1):
+def add_noise(data, cat, iter=10, level=1, sens=None):
     """
     Adds noise to the input data. Continuous data has laplacian noise added with mean 0 and var=level. Discrete data
     has level/len(data) of the values uniformly randomly selected from all possible values the variable could take
@@ -195,16 +194,23 @@ def add_noise(data, cat, iter=10, level=1):
         x = data.copy()
 
         # use laplacian noise with mean 0 and specified noise level to add noise to continuous data
-        x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
+        for i in range(0, len(sens)):
+            if sens[i] == 0:
+                x[i, 0] += level
+            else:
+                x[i, 0] -= level
+
+        """x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
 
         # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
         # a particular feature that will be randomly selected from a uniform distribution of all possible values
         for index in dis_index:
             num_of_changes = int(np.ceil(0.01 * level * len(x)))
+            # num_of_changes = int(np.ceil(level * len(x)))
             num_of_instances = np.arange(len(x))
             change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
             possible_values = data[:, index]
-            x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)
+            x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)"""
 
         x_noise[n] = x
 
@@ -253,6 +259,7 @@ def equalize_data(data, target):
         target = target.append(equalise_target)
 
     return data, target,
+
 
 def get_fair_data(data, cat, bound):
     """
@@ -447,16 +454,30 @@ def get_data(name):
         target = np.transpose(np.array(np.random.choice([0, 1], size=size)))
 
         for row in range(0, size):
+            if data[row, 16] == 1:
+                target[row] = np.random.choice([0, 1], replace=True, p=[0.4, 0.6])
+            else:
+                target[row] = np.random.choice([0, 1], replace=True, p=[0.6, 0.4])
+
+        for row in range(0, size):
+            if data[row, 16] == 1:
+                data[row, 0] = np.random.normal(loc=1000000, scale=0.00001)
+            else:
+                data[row, 0] = np.random.normal(loc=-1000000, scale=0.00001)
             for col in range(0, 10):
-                if data[row, 16] == 1:
-                    data[row, 0] = np.random.normal(loc=0.5, scale=1.0)
+                if target[row] == 1:
+                    data[row, col] = np.random.normal(loc=1, scale=1)
                 else:
-                    data[row, col] = np.random.normal(loc=-10, scale=2.0)
+                    data[row, col] = np.random.normal(loc=-1, scale=1)
+                if data[row, 16] == 1:
+                    data[row, col] += 0.01
+                else:
+                    data[row, col] -= 0.01
             for col in range(10, 15):
-                if data[row, 16] == 1:
-                    data[row, col] = np.random.choice([0, 0, 0, 0, 0, 0, 0, 0, 1, 1], replace=True)
+                if target[row] == 1:
+                    data[row, col] = np.random.choice([0, 1], replace=True, p=[0.5, 0.5])
                 else:
-                    data[row, col] = np.random.choice([0, 0, 1, 1, 1, 1, 1, 1, 1, 1], replace=True)
+                    data[row, col] = np.random.choice([0, 1], replace=True, p=[0.5, 0.5])
 
         data = pd.DataFrame(data,
                             columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
@@ -469,6 +490,33 @@ def get_data(name):
 
         sens = 'Q'
 
+    if name == 'unfair_1':
+        size = 500000
+        np.random.seed(123)
+        data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.choice([-1, 1], size=size)])
+
+        data = np.transpose(data)
+
+        target = np.transpose(np.array(np.random.choice([0, 1], size=size)))
+
+        for row in range(0, size):
+            data[row, 0] = data[row, 2]
+            prob = 1 / (1 + np.exp(-2 * data[row, 2] * (-1)))
+            target[row] = np.random.choice([-1, 1], p=[prob, 1-prob])
+            data[row, 1] = target[row] + np.random.normal(loc=0, scale=1.0)
+
+        data = pd.DataFrame(data,
+                            columns=['A', 'B', 'C'])
+
+        target = pd.Series(target)
+
+        for col in ['C']:
+            data[col] = data[col].astype('category')
+
+        sens = 'C'
+
     return data, target, sens
 
 
@@ -476,6 +524,6 @@ if __name__ == '__main__':
     data, target, sens, cat, bounds = fetch_adult_data()
     data_noise = add_noise(data, cat, iter=10, level=0.00001)
     rand_data = get_fair_data(data, cat, bounds)
-    rand_target = np.random.choice(np.arange(target.min(), target.max()+1), size=len(target))
+    rand_target = np.random.choice(np.arange(target.min(), target.max() + 1), size=len(target))
 
     print('test done')
