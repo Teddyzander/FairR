@@ -6,9 +6,9 @@ import string
 import warnings
 import data_util.fetch_data
 import data_util.plot_data as plot_data
+import data_util.distribution_converge as distribution_convergence
 from robust_metric.RobustMetric import RobustMetric
-from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
-from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage
+import matplotlib.pyplot as plt
 
 # Remove warnings from printed output
 warnings.filterwarnings("ignore")
@@ -23,7 +23,7 @@ parser.add_argument('--output_dir', type=str, default='test', help='output dir f
 parser.add_argument('--min_noise', type=float, default=0.01, help='minimum level of noise for test')
 parser.add_argument('--max_noise', type=float, default=1, help='maximum level of noise for test')
 parser.add_argument('--noise_iters', type=int, default=1, help='Number of data samples per noise level')
-parser.add_argument('--model_iters', type=int, default=4000, help='Maximum iterations for model fitting')
+parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
                                                                   'including SVC, MLP, LR, SGD, DTC')
 args = parser.parse_args()
@@ -107,4 +107,16 @@ if __name__ == '__main__':
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint],
                         x_lim=[args.min_noise, args.max_noise])
 
+    # gen the shifted data
+    fairness2 = distribution_convergence.con_dist(test, levels, args.dataset)
+
+    model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
+    colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    f, ax = plt.subplots()
+    for i in range(0, 4):
+        ax.plot(levels, fairness2[i, :], label=model_name[i], color=colours[i])
+    plt.legend()
+    plt.show()
+    plt.savefig(directory_fairness + 'convergence_figure')
+    np.save(directory_fairness + '_resample', fairness2)
     print('DONE')

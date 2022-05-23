@@ -194,13 +194,14 @@ def add_noise(data, cat, iter=10, level=1, sens=None):
         x = data.copy()
 
         # use laplacian noise with mean 0 and specified noise level to add noise to continuous data
-        for i in range(0, len(sens)):
+        """for i in range(0, len(sens)):
             if sens[i] == 0:
                 x[i, 0] += level
             else:
                 x[i, 0] -= level
+        x[:, 0] = (x[:, 0] - np.min(x[:, 0])) / (np.max(x[:, 0]) - np.min(x[:, 0]))"""
 
-        """x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
+        x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
 
         # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
         # a particular feature that will be randomly selected from a uniform distribution of all possible values
@@ -210,7 +211,7 @@ def add_noise(data, cat, iter=10, level=1, sens=None):
             num_of_instances = np.arange(len(x))
             change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
             possible_values = data[:, index]
-            x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)"""
+            x[change_index, index] = np.random.choice(possible_values, size=num_of_changes)
 
         x_noise[n] = x
 
@@ -499,7 +500,7 @@ def get_data(name):
 
         data = np.transpose(data)
 
-        target = np.transpose(np.array(np.random.choice([0, 1], size=size)))
+        target = np.transpose(np.array(np.random.choice([-1, 1], size=size)))
 
         for row in range(0, size):
             data[row, 0] = data[row, 2]
@@ -516,6 +517,43 @@ def get_data(name):
             data[col] = data[col].astype('category')
 
         sens = 'C'
+
+    if name == 'unfair_2':
+        size = 500000
+        np.random.seed(123)
+        data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.normal(loc=0.0, scale=1.0, size=size),
+                           np.random.choice([-1, 1], size=size)])
+
+        data = np.transpose(data)
+
+        target = np.transpose(np.array(np.random.choice([-1, 1], size=size)))
+
+        mean1 = (2 * np.exp(2)) / (np.exp(2) + 1)
+        mean0 = 0
+        var1 = (np.exp(4) - 1) / ((np.exp(2) + 1) ** 2)
+        var0 = (np.exp(-4) + 1) / ((np.exp(-2) + 1) ** 2)
+
+        for row in range(0, size):
+            data[row, 0] = data[row, 3]
+            if data[row, 3] == 1:
+                data[row, 2] = np.random.normal(loc=mean1, scale=var1)
+            else:
+                data[row, 2] = np.random.normal(loc=mean0, scale=var0)
+            prob = 1 / (1 + np.exp(-2 * data[row, 2]))
+            target[row] = np.random.choice([-1, 1], p=[1 - prob, prob])
+            data[row, 1] = target[row] + np.random.normal(loc=0, scale=1.0)
+
+        data = pd.DataFrame(data,
+                            columns=['A', 'B', 'C', 'D'])
+
+        target = pd.Series(target)
+
+        for col in ['D']:
+            data[col] = data[col].astype('category')
+
+        sens = 'D'
 
     return data, target, sens
 
