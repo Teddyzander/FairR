@@ -430,7 +430,7 @@ def get_data(name):
         sens = 'Q'
 
     if name == 'unfair':
-        size = 20000
+        size = 100000
         np.random.seed(123)
         data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),
@@ -492,7 +492,7 @@ def get_data(name):
         sens = 'Q'
 
     if name == 'unfair_1':
-        size = 50000
+        size = 100000
         np.random.seed(123)
         data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),
@@ -519,7 +519,7 @@ def get_data(name):
         sens = 'C'
 
     if name == 'unfair_2':
-        size = 50000
+        size = 100000
         np.random.seed(123)
         data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),

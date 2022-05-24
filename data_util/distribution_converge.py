@@ -13,7 +13,7 @@ def con_dist(fairness_obj, levels, name=None):
     :return: fairness measures across different processing methods for reduced unfairness in data
     """
     fairness = None
-    size = 50000
+    size = 100000
     if name == 'unfair_1':
         level = 0
         fairness = np.zeros((4, len(levels)))
@@ -60,7 +60,6 @@ def con_dist(fairness_obj, levels, name=None):
             level += 1
 
     if name == 'unfair_2':
-        print('Testing fairness for distribution convergence...')
         fairness = np.zeros((4, len(levels)))
         level = 0
         mean1 = (2 * np.exp(2)) / (np.exp(2) + 1)
