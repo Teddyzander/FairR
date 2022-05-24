@@ -66,21 +66,18 @@ if __name__ == '__main__':
                         noise_iter=args.noise_iters)
     test.split_data()
 
+    # Train models with baseline, pre and post processing, and in-learning
     score_base = test.run_baseline()
-    print('Baseline accuracy score: ' + str(score_base))
     score_pre = test.run_preprocessing()
-    print('Pre-processing accuracy score: ' + str(score_pre))
     score_in = test.run_inprocessing()
-    print('In-processing accuracy score: ' + str(score_in))
     score_post = test.run_postprocessing()
-    print('Post-processing accuracy score: ' + str(score_post))
 
+    # Measure fairness and robustness metrics
     fairness = test.measure_total_fairness()
     robustness = test.measure_robustness()
     rel_robustness = test.measure_relative_robustness()
 
-    test.summary()
-
+    # Save all the data
     directory_fairness = '{}/fairness/{}_{}_{}_data'.format(args.output_dir, args.dataset,
                                                             args.model_type, args.train_constraint)
 
@@ -93,22 +90,25 @@ if __name__ == '__main__':
     np.save(directory_fairness, fairness)
     np.save(directory_robustness, robustness)
 
-    plot_data.plot_data(fairness, levels, directory_fairness + '_fairness_figure', save=True,
+    # plot and save random noise fairness and robustness
+    plot_data.plot_data(fairness, levels*5, directory_fairness + '_fairness_figure', save=True,
                         title='Fairness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
-    plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
+    plot_data.plot_data(robustness, levels*5, directory_robustness + '_robustness_figure', save=True,
                         title='Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint],
                         x_lim=[args.min_noise, args.max_noise])
 
-    plot_data.plot_data(rel_robustness, levels, directory_rel_robustness + '_rel_robustness_figure', save=True,
+    plot_data.plot_data(rel_robustness, levels*5, directory_rel_robustness + '_rel_robustness_figure', save=True,
                         title='Relative Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint],
                         x_lim=[args.min_noise, args.max_noise])
 
-    # gen the shifted data
+    # if distributions are known, converge ditributions that are dependent on sensitive data (make data more fair)
     fairness2 = distribution_convergence.con_dist(test, levels, args.dataset)
+
+    # plot and save the convergence fairness measures
     fig1, ax1 = plt.subplots()
     model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
     colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
@@ -120,5 +120,12 @@ if __name__ == '__main__':
     ax1.set_ylabel('Difference of {}'.format(full_constraints[args.train_constraint]))
     ax1.grid()
     fig1.savefig(directory_fairness + '_convergence_figure')
+
+    # show test and model summaries
     np.save(directory_fairness + '_resample', fairness2)
+    print('Baseline accuracy score: ' + str(score_base))
+    print('Pre-processing accuracy score: ' + str(score_pre))
+    print('In-processing accuracy score: ' + str(score_in))
+    print('Post-processing accuracy score: ' + str(score_post))
+    test.summary()
     print('DONE')
