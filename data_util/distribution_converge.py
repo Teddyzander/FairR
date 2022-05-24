@@ -13,12 +13,12 @@ def con_dist(fairness_obj, levels, name=None):
     :return: fairness measures across different processing methods for reduced unfairness in data
     """
     fairness = None
+    size = 50000
     if name == 'unfair_1':
         level = 0
         fairness = np.zeros((4, len(levels)))
         for t in levels:
             start = time.time()
-            size = 500000
             np.random.seed(123)
             data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                                np.random.normal(loc=0.0, scale=1.0, size=size),
@@ -29,7 +29,7 @@ def con_dist(fairness_obj, levels, name=None):
             target = np.transpose(np.array(np.random.choice([-1, 1], size=size)))
 
             for row in range(0, size):
-                data[row, 0] = np.random.choice([data[row, 2], -data[row, 2]], p=[1-(t/2), t/2])
+                data[row, 0] = np.random.choice([data[row, 2], -data[row, 2]], p=[1 - (t / 2), t / 2])
                 prob = 1 / (1 + np.exp(-2 * data[row, 2] * (-1)))
                 temp = 0.5 - prob
                 target[row] = np.random.choice([-1, 1], p=[prob + t * temp, 1 - prob - t * temp])
@@ -59,8 +59,6 @@ def con_dist(fairness_obj, levels, name=None):
 
             level += 1
 
-
-
     if name == 'unfair_2':
         print('Testing fairness for distribution convergence...')
         fairness = np.zeros((4, len(levels)))
@@ -71,7 +69,6 @@ def con_dist(fairness_obj, levels, name=None):
         var0 = (np.exp(-4) + 1) / ((np.exp(-2) + 1) ** 2)
         for t in levels:
             start = time.time()
-            size = 500000
             np.random.seed(123)
             data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                                np.random.normal(loc=0.0, scale=1.0, size=size),
