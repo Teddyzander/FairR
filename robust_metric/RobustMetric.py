@@ -373,7 +373,7 @@ class RobustMetric:
         end = time.time()
         completion_est = np.round(((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60), decimals=2)
 
-        print('Measuring fairness over all data-sets. Estimated time to completion: {} minutes from {}'
+        print('Measuring fairness for random noise. Estimated time to completion: {} minutes from {}'
               .format(completion_est, time.strftime("%H:%M:%S")))
 
         # check fairness of each noise_level data set against each model

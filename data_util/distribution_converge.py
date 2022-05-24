@@ -52,7 +52,8 @@ def con_dist(fairness_obj, levels, name=None):
             if level == 0:
                 completion_est = np.round(((len(levels) * (end - start + 0.01)) / 60),
                                           decimals=2)
-                print('Testing fairness for distribution convergence. Estimated time to completion: {} minutes from {}'
+                print('Measuring fairness for distribution convergence. '
+                      'Estimated time to completion: {} minutes from {}'
                       .format(completion_est, time.strftime("%H:%M:%S")))
 
             level += 1
