@@ -201,7 +201,7 @@ def add_noise(data, cat, iter=10, level=1, sens=None):
                 x[i, 0] -= level
         x[:, 0] = (x[:, 0] - np.min(x[:, 0])) / (np.max(x[:, 0]) - np.min(x[:, 0]))"""
 
-        x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
+        x[:, con_index] += np.random.laplace(loc=0, scale=level * 5, size=x[:, con_index].shape)
 
         # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
         # a particular feature that will be randomly selected from a uniform distribution of all possible values

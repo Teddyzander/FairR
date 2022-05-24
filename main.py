@@ -109,14 +109,16 @@ if __name__ == '__main__':
 
     # gen the shifted data
     fairness2 = distribution_convergence.con_dist(test, levels, args.dataset)
-
+    fig1, ax1 = plt.subplots()
     model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
     colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-    f, ax = plt.subplots()
+    plt.figure(1)
     for i in range(0, 4):
-        ax.plot(levels, fairness2[i, :], label=model_name[i], color=colours[i])
-    plt.legend()
-    plt.show()
-    plt.savefig(directory_fairness + 'convergence_figure')
+        ax1.plot(levels, fairness2[i, :], label=model_name[i], color=colours[i])
+    ax1.legend()
+    ax1.set_xlabel('t')
+    ax1.set_ylabel('Difference of {}'.format(full_constraints[args.train_constraint]))
+    ax1.grid()
+    fig1.savefig(directory_fairness + '_convergence_figure')
     np.save(directory_fairness + '_resample', fairness2)
     print('DONE')

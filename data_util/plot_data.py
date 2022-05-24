@@ -22,6 +22,7 @@ def plot_data(data, noise_levels, name='figure',
     num_models = len(model_name)
     num_levels = len(noise_levels)
     colours = {'red': '-r', 'green': '-g', 'blue': '-b', 'black': '-k'}
+    colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     means = np.zeros((num_models, num_levels + 1))
     mean_er = np.zeros((num_models, num_levels + 1))
     x = np.insert(noise_levels, 0, 0)
@@ -33,12 +34,12 @@ def plot_data(data, noise_levels, name='figure',
 
     if log:
         for i in range(0, 4):
-            ax.loglog(x, means[i], list(colours.values())[i], label=model_name[i])
-            ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=list(colours.keys())[i])
+            ax.loglog(x, means[i], colours[i], label=model_name[i])
+            ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=colours[i])
     else:
         for i in range(0, 4):
-            ax.plot(x, means[i], list(colours.values())[i], label=model_name[i])
-            ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=list(colours.keys())[i])
+            ax.plot(x, means[i], colours[i], label=model_name[i])
+            ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=colours[i])
 
     plt.legend()
     plt.xlabel(x_label)

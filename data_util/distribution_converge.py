@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import time
 import data_util.fetch_data
 
 
@@ -12,6 +13,7 @@ def con_dist(fairness_obj, levels, name=None):
     :return: fairness measures across different processing methods for reduced unfairness in data
     """
     if name == 'unfair_2':
+        print('Testing fairness for distribution convergence...')
         fairness = np.zeros((4, len(levels)))
         level = 0
         mean1 = (2 * np.exp(2)) / (np.exp(2) + 1)
@@ -19,7 +21,7 @@ def con_dist(fairness_obj, levels, name=None):
         var1 = (np.exp(4) - 1) / ((np.exp(2) + 1) ** 2)
         var0 = (np.exp(-4) + 1) / ((np.exp(-2) + 1) ** 2)
         for t in levels:
-
+            start = time.time()
             size = 500000
             np.random.seed(123)
             data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
@@ -56,6 +58,15 @@ def con_dist(fairness_obj, levels, name=None):
             data, target, sense, cat, bounds = data_util.fetch_data.prepare_data(data, target, sens)
             fairness[0, level], fairness[1, level], fairness[2, level], fairness[3, level], = \
                 fairness_obj.measure_fairness(data, target, sense[sens])
+
+            end = time.time()
+
+            if level == 0:
+                completion_est = np.round(((len(levels) * (end - start + 0.01)) / 60),
+                                          decimals=2)
+                print('Testing fairness for distribution convergence. Estimated time to completion: {} minutes from {}'
+                      .format(completion_est, time.strftime("%H:%M:%S")))
+
             level += 1
 
         return fairness
