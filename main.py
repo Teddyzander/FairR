@@ -108,21 +108,23 @@ if __name__ == '__main__':
     # if distributions are known, converge ditributions that are dependent on sensitive data (make data more fair)
     fairness2 = distribution_convergence.con_dist(test, levels, args.dataset)
 
-    # plot and save the convergence fairness measures
-    fig1, ax1 = plt.subplots()
-    model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
-    colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-    plt.figure(1)
-    for i in range(0, 4):
-        ax1.plot(levels, fairness2[i, :], label=model_name[i], color=colours[i])
-    ax1.legend()
-    ax1.set_xlabel('t')
-    ax1.set_ylabel('Difference of {}'.format(full_constraints[args.train_constraint]))
-    ax1.grid()
-    fig1.savefig(directory_fairness + '_convergence_figure')
+    # We can only converge distributions for simulated datasets - fairness2 == None if using a real dataset
+    if fairness2 is not None:
+        # plot and save the convergence fairness measures
+        fig1, ax1 = plt.subplots()
+        model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
+        colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+        plt.figure(1)
+        for i in range(0, 4):
+            ax1.plot(levels, fairness2[i, :], label=model_name[i], color=colours[i])
+        ax1.legend()
+        ax1.set_xlabel('t')
+        ax1.set_ylabel('Difference of {}'.format(full_constraints[args.train_constraint]))
+        ax1.grid()
+        fig1.savefig(directory_fairness + '_convergence_figure')
 
-    # show test and model summaries
-    np.save(directory_fairness + '_resample', fairness2)
+        # show test and model summaries
+        np.save(directory_fairness + '_resample', fairness2)
     print('Baseline accuracy score: ' + str(score_base))
     print('Pre-processing accuracy score: ' + str(score_pre))
     print('In-processing accuracy score: ' + str(score_in))
