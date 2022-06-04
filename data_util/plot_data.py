@@ -32,21 +32,18 @@ def plot_data(data, noise_levels, name='figure',
             mean_er[i, j] = np.std(data[i, j]) / np.sqrt(len(data[i, j]))
     f, ax = plt.subplots()
 
-    if log:
-        for i in range(0, 4):
-            ax.loglog(x, means[i], colours[i], label=model_name[i])
-            ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=colours[i])
-    else:
-        for i in range(0, 4):
-            ax.plot(x, means[i], colours[i], label=model_name[i])
-            ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=colours[i])
+
+    for i in range(0, 4):
+        ax.plot(x, means[i], colours[i], label=model_name[i])
+        ax.fill_between(x, means[i] - mean_er[i], means[i] + mean_er[i], alpha=0.25, color=colours[i])
 
     plt.legend()
     plt.xlabel(x_label)
     plt.ylabel('Difference of {}'.format(y_label))
 
     if log:
-        plt.grid(axis='y')
+        plt.yscale('log')
+        plt.xscale('log')
 
     else:
         plt.grid()

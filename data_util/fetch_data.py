@@ -4,7 +4,7 @@ import pandas as pd
 import random
 import string
 from fairlearn.datasets import fetch_adult, fetch_bank_marketing, fetch_boston
-from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage
+from folktables import ACSDataSource, ACSEmployment, ACSPublicCoverage, ACSIncome, ACSMobility, ACSTravelTime
 from sklearn.model_selection import train_test_split
 
 
@@ -201,12 +201,15 @@ def add_noise(data, cat, iter=10, level=1, sens=None):
                 x[i, 0] -= level
         x[:, 0] = (x[:, 0] - np.min(x[:, 0])) / (np.max(x[:, 0]) - np.min(x[:, 0]))"""
 
-        x[:, con_index] += np.random.laplace(loc=0, scale=level * 5, size=x[:, con_index].shape)
+        x[:, con_index] += np.random.laplace(loc=0, scale=level, size=x[:, con_index].shape)
 
         # use bernoulli distribution to create noisy discrete data - 'level' represents the percentage of values for
         # a particular feature that will be randomly selected from a uniform distribution of all possible values
         for index in dis_index:
             num_of_changes = int(np.ceil(0.01 * level * len(x)))
+            if num_of_changes > len(x):
+                num_of_changes = len(x)
+
             # num_of_changes = int(np.ceil(level * len(x)))
             num_of_instances = np.arange(len(x))
             change_index = np.random.choice(num_of_instances, size=num_of_changes, replace=False)
@@ -356,7 +359,15 @@ def get_data(name):
         data = dfRaw.iloc[:, :-1]
         target = dfRaw.iloc[:, -1]
 
-        data = data.drop(labels='id', axis=1)
+        # convert data to white and non-white
+        data['race'].values[(data['race'].values != 'Caucasian')] = int(0)
+        data['race'].values[(data['race'].values == 'Caucasian')] = int(1)
+
+        # define features we wish to keep
+        data.drop(data.columns.difference(['last', 'age', 'race', 'priors_count', 'sex',
+                                           'c_charge_degree', 'is_recid', 'is_violent_recid',
+                                           'decile_score.1', 'two_year_recid']), 1, inplace=True)
+
 
         sens = 'race'
 
@@ -375,8 +386,35 @@ def get_data(name):
         # This data set has a bad class ratio, so equalise it
         (data, target) = data_util.fetch_data.equalize_data(data, target)
 
-        # sensitive attribute is month
+        # we only car about sex
+        data['i'].values[(data['i'].values == 'A91')] = int(1)
+        data['i'].values[(data['i'].values == 'A93')] = int(1)
+        data['i'].values[(data['i'].values == 'A94')] = int(1)
+        data['i'].values[(data['i'].values == 'A92')] = int(0)
+        data['i'].values[(data['i'].values == 'A95')] = int(0)
+
+        # sensitive attribute is sex
         sens = 'i'
+
+    if name == 'dutch':
+        dutch = pd.read_csv('data_input/dutch.csv', sep=',')
+
+        # seperate inputs from outputs
+        data = dutch.iloc[:, :-1]
+        target = dutch.iloc[:, -1]
+
+        # This data set has a bad class ratio, so equalise it
+        sens='sex'
+
+    if name == 'law':
+        law = pd.read_csv('data_input/law_school_clean.csv', sep=',')
+
+        # seperate inputs from outputs
+        data = law.iloc[:, :-1]
+        target = law.iloc[:, -1]
+
+        # This data set has a bad class ratio, so equalise it
+        sens='race'
 
     if name == 'employ':
         cali_data = pd.read_csv('data_input/psam_p06.csv')
@@ -391,7 +429,52 @@ def get_data(name):
 
         target = (target != 1).astype(int)
 
-        sens = 'RAC1P'
+        sens = 'SEX'
+
+    if name == 'adult_2':
+        cali_data = pd.read_csv('data_input/psam_p06.csv')
+        all_data = cali_data[cali_data.columns.intersection(ACSIncome.features)]
+        all_target = cali_data[ACSIncome.target]
+        combine = pd.concat([all_data, all_target], axis=1)
+        combine = combine.fillna(0)
+        combine = combine.dropna(axis=0)
+
+        data = combine.iloc[:, :-1]
+        target = combine.iloc[:, -1]
+
+        target.values[(target.values <= 50000)] = int(0)
+        target.values[(target.values > 50000)] = int(1)
+
+        sens = 'SEX'
+
+    if name == 'public':
+        cali_data = pd.read_csv('data_input/psam_p06.csv')
+        all_data = cali_data[cali_data.columns.intersection(ACSPublicCoverage.features)]
+        all_target = cali_data[ACSPublicCoverage.target]
+        combine = pd.concat([all_data, all_target], axis=1)
+        combine = combine.fillna(0)
+        combine = combine.dropna(axis=0)
+
+        data = combine.iloc[:, :-1]
+        target = combine.iloc[:, -1]
+
+        sens = 'SEX'
+
+    if name == 'mobility':
+        cali_data = pd.read_csv('data_input/psam_p06.csv')
+        all_data = cali_data[cali_data.columns.intersection(ACSMobility.features)]
+        all_target = cali_data[ACSMobility.target]
+        combine = pd.concat([all_data, all_target], axis=1)
+        combine = combine.fillna(0)
+        combine = combine.dropna(axis=0)
+
+        data = combine.iloc[:, :-1]
+        target = combine.iloc[:, -1]
+
+        target.values[(target.values == 1)] = int(1)
+        target.values[(target.values != 1)] = int(0)
+
+        sens = 'SEX'
 
     if name == 'fair':
         size = 20000

@@ -5,7 +5,7 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.impute import SimpleImputer
+from sklearn.naive_bayes import GaussianNB
 from fairlearn.postprocessing import ThresholdOptimizer
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import DemographicParity, EqualizedOdds, TruePositiveRateParity, FalsePositiveRateParity, \
@@ -57,9 +57,14 @@ class RobustMetric:
             self.model_type = 'Multilayer Perceptron (MLP)'
             self.model = MLPClassifier
             self.mlp_struct = mlp_struct
+
         elif model_type == 'LR':
             self.model_type = 'Logistic Regression (LR)'
             self.model = LogisticRegression
+
+        elif model_type == 'NB':
+            self.model_type = 'Naive Bayes (NB)'
+            self.model = GaussianNB
 
         elif model_type == 'SGD':
             self.model_type = 'Stochastic Gradient Descent (SGD)'
@@ -177,13 +182,20 @@ class RobustMetric:
             self.baseline_model = self.model(solver='lbfgs', alpha=1e-5, max_iter=self.max_iter,
                                              hidden_layer_sizes=self.mlp_struct, random_state=123)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or \
-                self.model_type == 'Logistic Regression (LR)' or \
-                self.model_type == 'Stochastic Gradient Descent (SGD)':
+        elif self.model_type == 'Logistic Regression (LR)':
             self.baseline_model = self.model(max_iter=self.max_iter)
 
+        elif self.model_type == 'Stochastic Gradient Descent (SGD)':
+            self.baseline_model = self.model(max_iter=self.max_iter, loss='log', penalty='l1')
+
+        elif self.model_type == 'Support Vector Classification (SVC)':
+            self.baseline_model = self.model(max_iter=self.max_iter, kernel='poly')
+
         elif self.model_type == 'Decision Tree Classifier (DTC)':
-            self.baseline_model = self.model(criterion='entropy', random_state=123)
+            self.baseline_model = self.model(criterion='gini', random_state=123, max_depth=self.x_tr.shape[1])
+
+        elif self.model_type == 'Naive Bayes (NB)':
+            self.baseline_model = self.model()
 
         self.baseline_model.fit(self.x_tr, self.y_tr)
 
@@ -223,13 +235,20 @@ class RobustMetric:
             self.preprocessing_model = self.model(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=self.mlp_struct,
                                                   max_iter=self.max_iter, random_state=123)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or \
-                self.model_type == 'Logistic Regression (LR)' or \
-                self.model_type == 'Stochastic Gradient Descent (SGD)':
+        elif self.model_type == 'Logistic Regression (LR)':
             self.preprocessing_model = self.model(max_iter=self.max_iter)
 
+        elif self.model_type == 'Stochastic Gradient Descent (SGD)':
+            self.preprocessing_model = self.model(max_iter=self.max_iter, loss='log', penalty='l1')
+
+        elif self.model_type == 'Support Vector Classification (SVC)':
+            self.preprocessing_model = self.model(max_iter=self.max_iter, kernel='poly')
+
         elif self.model_type == 'Decision Tree Classifier (DTC)':
-            self.preprocessing_model = self.model(criterion='entropy', random_state=123)
+            self.preprocessing_model = self.model(criterion='gini', random_state=123, max_depth=self.x_tr.shape[1])
+
+        elif self.model_type == 'Naive Bayes (NB)':
+            self.preprocessing_model = self.model()
 
         self.preprocessing_model.fit(x_tr_pre, self.y_tr)
 
@@ -261,15 +280,29 @@ class RobustMetric:
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
-        elif self.model_type == 'Support Vector Classification (SVC)' or \
-                self.model_type == 'Logistic Regression (LR)' or \
-                self.model_type == 'Stochastic Gradient Descent (SGD)':
+        elif self.model_type == 'Logistic Regression (LR)':
             self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter),
+                                                            constraints=self.fairness_constraint_func,
+                                                            eps=eps, nu=nu, max_iter=50)
+        elif self.model_type == 'Stochastic Gradient Descent (SGD)':
+            self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter, loss='log',
+                                                                       penalty='l1'),
+                                                            constraints=self.fairness_constraint_func,
+                                                            eps=eps, nu=nu, max_iter=50)
+
+        elif self.model_type == 'Support Vector Classification (SVC)':
+            self.inprocessing_model = ExponentiatedGradient(self.model(max_iter=self.max_iter, kernel='poly'),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
         elif self.model_type == 'Decision Tree Classifier (DTC)':
-            self.inprocessing_model = ExponentiatedGradient(self.model(criterion='entropy', random_state=123),
+            self.inprocessing_model = ExponentiatedGradient(self.model(criterion='gini', random_state=123,
+                                                                       max_depth=self.x_tr.shape[1]),
+                                                            constraints=self.fairness_constraint_func,
+                                                            eps=eps, nu=nu, max_iter=50)
+
+        elif self.model_type == 'Naive Bayes (NB)':
+            self.inprocessing_model = ExponentiatedGradient(self.model(),
                                                             constraints=self.fairness_constraint_func,
                                                             eps=eps, nu=nu, max_iter=50)
 
@@ -420,7 +453,7 @@ class RobustMetric:
             mean_noiseless = np.mean(self.fairness[i, 0, :])
             for j in range(0, robustness.shape[1]):
                 for k in range(0, robustness.shape[2]):
-                    robustness[i, j, k] = np.abs(1 - ((mean_noiseless - self.fairness[i, j, k]) / mean_noiseless))
+                    robustness[i, j, k] = ((self.fairness[i, j, k] - mean_noiseless) / mean_noiseless) + 1
 
         self.robustness = robustness
 

@@ -22,10 +22,11 @@ parser.add_argument('--train_constraint', type=str, default='dp',
 parser.add_argument('--output_dir', type=str, default='test', help='output dir for saving the result')
 parser.add_argument('--min_noise', type=float, default=0.01, help='minimum level of noise for test')
 parser.add_argument('--max_noise', type=float, default=1, help='maximum level of noise for test')
-parser.add_argument('--noise_iters', type=int, default=1, help='Number of data samples per noise level')
+parser.add_argument('--noise_iters', type=int, default=10, help='Number of data samples per noise level')
 parser.add_argument('--model_iters', type=int, default=1000, help='Maximum iterations for model fitting')
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
                                                                   'including SVC, MLP, LR, SGD, DTC')
+parser.add_argument('--step_size', type=float, default=1, help='Step size for noise levels')
 args = parser.parse_args()
 
 # Dictionary to hold full titles of training constraints (used for plot axis)
@@ -59,7 +60,14 @@ if __name__ == '__main__':
     # set up variables from arguments
     data, target, sens = data_util.fetch_data.get_data(args.dataset)
 
-    levels = np.arange(args.min_noise, args.max_noise + args.min_noise, args.min_noise)
+    levels = np.arange(args.min_noise, args.max_noise + args.min_noise, args.step_size)
+    """levels = np.array([0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
+                       0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+                       1, 2, 3, 4, 5, 6, 7, 8, 9,
+                       10, 20, 30, 40, 50, 60, 70, 80, 90,
+                       100, 200, 300, 400, 500, 600, 700, 800, 900,
+                       1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,
+                       10000])"""
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
@@ -91,22 +99,23 @@ if __name__ == '__main__':
     np.save(directory_robustness, robustness)
 
     # plot and save random noise fairness and robustness
-    plot_data.plot_data(fairness, levels*5, directory_fairness + '_fairness_figure', save=True,
+    plot_data.plot_data(fairness, levels, directory_fairness + '_fairness_figure', save=True,
                         title='Fairness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint])
 
-    plot_data.plot_data(robustness, levels*5, directory_robustness + '_robustness_figure', save=True,
+    plot_data.plot_data(robustness, levels, directory_robustness + '_robustness_figure', save=True,
                         title='Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint],
                         x_lim=[args.min_noise, args.max_noise])
 
-    plot_data.plot_data(rel_robustness, levels*5, directory_rel_robustness + '_rel_robustness_figure', save=True,
+    plot_data.plot_data(rel_robustness, levels, directory_rel_robustness + '_rel_robustness_figure', save=True,
                         title='Relative Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint],
                         x_lim=[args.min_noise, args.max_noise])
 
     # if distributions are known, converge ditributions that are dependent on sensitive data (make data more fair)
-    fairness2 = distribution_convergence.con_dist(test, levels, args.dataset)
+    t_levels = [0.01, 1+0.01, 0.01]
+    fairness2 = distribution_convergence.con_dist(test, t_levels, args.dataset)
 
     # We can only converge distributions for simulated datasets - fairness2 == None if using a real dataset
     if fairness2 is not None:
