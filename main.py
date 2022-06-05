@@ -1,11 +1,10 @@
 import argparse
 import numpy as np
 import os
-import pandas as pd
-import string
 import warnings
 import data_util.fetch_data
 import data_util.plot_data as plot_data
+import data_util.ROC as roc
 import data_util.distribution_converge as distribution_convergence
 from robust_metric.RobustMetric import RobustMetric
 import matplotlib.pyplot as plt
@@ -114,11 +113,11 @@ if __name__ == '__main__':
                         x_lim=[args.min_noise, args.max_noise])
 
     # if distributions are known, converge ditributions that are dependent on sensitive data (make data more fair)
-    t_levels = [0.01, 1+0.01, 0.01]
-    fairness2 = distribution_convergence.con_dist(test, t_levels, args.dataset)
+    """t_levels = [0.01, 1+0.01, 0.01]
+    fairness2 = distribution_convergence.con_dist(test, t_levels, args.dataset)"""
 
     # We can only converge distributions for simulated datasets - fairness2 == None if using a real dataset
-    if fairness2 is not None:
+    """if fairness2 is not None:
         # plot and save the convergence fairness measures
         fig1, ax1 = plt.subplots()
         model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
@@ -133,10 +132,13 @@ if __name__ == '__main__':
         fig1.savefig(directory_fairness + '_convergence_figure')
 
         # show test and model summaries
-        np.save(directory_fairness + '_resample', fairness2)
+        np.save(directory_fairness + '_resample', fairness2)"""
     print('Baseline accuracy score: ' + str(score_base))
     print('Pre-processing accuracy score: ' + str(score_pre))
     print('In-processing accuracy score: ' + str(score_in))
     print('Post-processing accuracy score: ' + str(score_post))
     test.summary()
+
+    roc.plot_ROC(test, directory_rel_robustness)
+
     print('DONE')

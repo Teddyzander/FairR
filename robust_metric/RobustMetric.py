@@ -348,27 +348,27 @@ class RobustMetric:
         :return: Nothing
         """
 
-        try:
-            # check fairness of baseline model
-            baseline_output = self.baseline_model.predict(data)
-            base_fairness = self.fairness_constraint_metric(target, baseline_output,
-                                                            sensitive_features=sens)
-            # check fairness of pre-processing model
-            x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
-            x_pre = self.preprocess.transform(x_pre)
-            preprocess_output = self.preprocessing_model.predict(x_pre)
-            pre_fairness = self.fairness_constraint_metric(target, preprocess_output,
-                                                           sensitive_features=sens)
-            # check fairness of in-processing model
-            inprocess_output = self.inprocessing_model.predict(data)
-            in_fairness = self.fairness_constraint_metric(target, inprocess_output,
-                                                          sensitive_features=sens)
-            # check fairness of post-processing model
-            postprocess_output = self.postprocessing_model.predict(data, sensitive_features=sens)
-            post_fairness = self.fairness_constraint_metric(target, postprocess_output,
-                                                            sensitive_features=sens)
+        #try:
+        # check fairness of baseline model
+        baseline_output = self.baseline_model.predict(data)
+        base_fairness = self.fairness_constraint_metric(target, baseline_output,
+                                                        sensitive_features=sens)
+        # check fairness of pre-processing model
+        x_pre = np.concatenate([data, sens.reshape(-1, 1)], axis=1)
+        x_pre = self.preprocess.transform(x_pre)
+        preprocess_output = self.preprocessing_model.predict(x_pre)
+        pre_fairness = self.fairness_constraint_metric(target, preprocess_output,
+                                                       sensitive_features=sens)
+        # check fairness of in-processing model
+        inprocess_output = self.inprocessing_model.predict(data)
+        in_fairness = self.fairness_constraint_metric(target, inprocess_output,
+                                                      sensitive_features=sens)
+        # check fairness of post-processing model
+        postprocess_output = self.postprocessing_model.predict(data, sensitive_features=sens)
+        post_fairness = self.fairness_constraint_metric(target, postprocess_output,
+                                                        sensitive_features=sens)
 
-        except:
+        """except:
             # check fairness of baseline model
             baseline_output = self.baseline_model.predict(data)
             base_fairness = self.fairness_constraint_metric(target, baseline_output)
@@ -382,7 +382,7 @@ class RobustMetric:
             in_fairness = self.fairness_constraint_metric(target, inprocess_output)
             # check fairness of post-processing model
             postprocess_output = self.postprocessing_model.predict(data, sensitive_features=sens)
-            post_fairness = self.fairness_constraint_metric(target, postprocess_output)
+            post_fairness = self.fairness_constraint_metric(target, postprocess_output)"""
 
         return base_fairness, pre_fairness, in_fairness, post_fairness
 

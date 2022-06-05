@@ -513,7 +513,7 @@ def get_data(name):
         sens = 'Q'
 
     if name == 'unfair':
-        size = 100000
+        size = 1000
         np.random.seed(123)
         data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),
@@ -575,7 +575,7 @@ def get_data(name):
         sens = 'Q'
 
     if name == 'unfair_1':
-        size = 100000
+        size = 1000
         np.random.seed(123)
         data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),
@@ -621,9 +621,9 @@ def get_data(name):
         for row in range(0, size):
             data[row, 0] = data[row, 3]
             if data[row, 3] == 1:
-                data[row, 2] = np.random.normal(loc=mean1, scale=var1)
+                data[row, 2] = np.random.normal(loc=mean1, scale=var1) + 1
             else:
-                data[row, 2] = np.random.normal(loc=mean0, scale=var0)
+                data[row, 2] = np.random.normal(loc=mean0, scale=var0) - 1
             prob = 1 / (1 + np.exp(-2 * data[row, 2]))
             target[row] = np.random.choice([-1, 1], p=[1 - prob, prob])
             data[row, 1] = target[row] + np.random.normal(loc=0, scale=1.0)
