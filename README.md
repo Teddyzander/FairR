@@ -30,6 +30,6 @@ The following is a list of command line arguments:
 * **--max_noise 'number'** is the maximum number for $k$.
 * **--noise_iters 'number'** is the number of iterations per value of $k$ (this is because some methods involve an element of randomness).
 * **--model_iters 'number'** is the maximum number of iterations to fit each model.
-* **--model_type 'model name'** is the type of model we wish to use (eg SVC is supper vectors, LR is logistic regression, etc).
+* **--model_type 'model name'** is the type of model we wish to use (eg SVC is support vectors, LR is logistic regression, etc).
 * **--step_size 'number'** is the step size between each noise level.
 * **--roc 'True/False'** decides whether to create and display the ROC curve.
