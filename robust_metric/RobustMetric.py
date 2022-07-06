@@ -116,6 +116,7 @@ class RobustMetric:
         # define variables to hold fairness and robustness
         self.fairness = []
         self.robustness = []
+        self.rel_robustness = []
 
     def summary(self):
         """
@@ -328,7 +329,9 @@ class RobustMetric:
         self.postprocessing_model = ThresholdOptimizer(
             estimator=self.baseline_model,
             constraints=self.fairness_constraint,
-            prefit=True)
+            objective='balanced_accuracy_score',
+            prefit=True,
+            grid_size=100000)
 
         # fit the postprocessing model with the allocated fairness constraint
         self.postprocessing_model.fit(self.x_tr, self.y_tr, sensitive_features=self.sens_tr)
@@ -348,7 +351,7 @@ class RobustMetric:
         :return: Nothing
         """
 
-        #try:
+        # try:
         # check fairness of baseline model
         baseline_output = self.baseline_model.predict(data)
         base_fairness = self.fairness_constraint_metric(target, baseline_output,
@@ -400,14 +403,19 @@ class RobustMetric:
         start = time.time()
 
         # measure the fairness of the noiseless data set
-        fairness[0, 0, :], fairness[1, 0, :], \
-        fairness[2, 0, :], fairness[3, 0, :] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
+        fairness[0, 0, 0], fairness[1, 0, 0], \
+        fairness[2, 0, 0], fairness[3, 0, 0] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
 
         end = time.time()
-        completion_est = np.round(((len(self.noise_level) * self.noise_iter * (end - start + 0.01)) / 60), decimals=2)
+        completion_est = np.round(((len(self.noise_level) * (self.noise_iter + 1) * (end - start + 0.01)) / 60),
+                                  decimals=2)
 
         print('Measuring fairness for random noise. Estimated time to completion: {} minutes from {}'
               .format(completion_est, time.strftime("%H:%M:%S")))
+
+        for i in range(1, self.noise_iter):
+            fairness[0, 0, i], fairness[1, 0, i], \
+            fairness[2, 0, i], fairness[3, 0, i] = self.measure_fairness(self.x_te, self.y_te, self.sens_te)
 
         # check fairness of each noise_level data set against each model
         start = time.time()
@@ -448,14 +456,13 @@ class RobustMetric:
         Measures how resistant to noise the model is, relative to the initial fairness model
         :return: relative robust matrix
         """
-        robustness = np.zeros(self.fairness.shape)
-        for i in range(0, robustness.shape[0]):
+        rel_robustness = np.zeros(self.fairness.shape)
+        for i in range(0, rel_robustness.shape[0]):
             mean_noiseless = np.mean(self.fairness[i, 0, :])
-            for j in range(0, robustness.shape[1]):
-                for k in range(0, robustness.shape[2]):
-                    robustness[i, j, k] = ((self.fairness[i, j, k] - mean_noiseless) / mean_noiseless) + 1
+            for j in range(0, rel_robustness.shape[1]):
+                for k in range(0, rel_robustness.shape[2]):
+                    rel_robustness[i, j, k] = self.fairness[i, j, k] / mean_noiseless
 
-        self.robustness = robustness
+        self.rel_robustness = rel_robustness
 
-        return self.robustness
-
+        return self.rel_robustness

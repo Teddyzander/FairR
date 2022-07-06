@@ -5,7 +5,7 @@ from data_util.fetch_data import add_noise
 
 
 def plot_ROC(classifier, dir):
-    noise_level = 0.1
+    noise_level = 1
     samples = len(classifier.sens_te)
     A_is_0 = np.count_nonzero(classifier.sens_te == 0)
     A_is_1 = samples - A_is_0

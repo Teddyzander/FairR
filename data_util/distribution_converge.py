@@ -114,4 +114,8 @@ def con_dist(fairness_obj, levels, name=None):
 
             level += 1
 
+            testing = fairness_obj.baseline_model.predict(data)
+            prob = np.sum(testing) / len(testing)
+            print('probability of positive class: {}'.format(prob))
+
     return fairness

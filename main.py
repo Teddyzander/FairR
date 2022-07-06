@@ -5,9 +5,7 @@ import warnings
 import data_util.fetch_data
 import data_util.plot_data as plot_data
 import data_util.ROC as roc
-import data_util.distribution_converge as distribution_convergence
 from robust_metric.RobustMetric import RobustMetric
-import matplotlib.pyplot as plt
 
 # Remove warnings from printed output
 warnings.filterwarnings("ignore")
@@ -26,6 +24,7 @@ parser.add_argument('--model_iters', type=int, default=1000, help='Maximum itera
 parser.add_argument('--model_type', type=str, default='SVC', help='Type of model to optimise, '
                                                                   'including SVC, MLP, LR, SGD, DTC')
 parser.add_argument('--step_size', type=float, default=1, help='Step size for noise levels')
+parser.add_argument('--roc', type=bool, default=False, help='Plot and save the ROC curve for k=0 and k=1')
 args = parser.parse_args()
 
 # Dictionary to hold full titles of training constraints (used for plot axis)
@@ -60,13 +59,6 @@ if __name__ == '__main__':
     data, target, sens = data_util.fetch_data.get_data(args.dataset)
 
     levels = np.arange(args.min_noise, args.max_noise + args.min_noise, args.step_size)
-    """levels = np.array([0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
-                       0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
-                       1, 2, 3, 4, 5, 6, 7, 8, 9,
-                       10, 20, 30, 40, 50, 60, 70, 80, 90,
-                       100, 200, 300, 400, 500, 600, 700, 800, 900,
-                       1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,
-                       10000])"""
 
     test = RobustMetric(data=data, target=target, sens=sens, max_iter=args.model_iters, model_type=args.model_type,
                         fairness_constraint=args.train_constraint, noise_level=levels,
@@ -110,35 +102,15 @@ if __name__ == '__main__':
     plot_data.plot_data(rel_robustness, levels, directory_rel_robustness + '_rel_robustness_figure', save=True,
                         title='Relative Robustness of {} with {}'.format(args.dataset, test.model_type),
                         x_label='Noise Level', y_label=full_constraints[args.train_constraint],
-                        x_lim=[args.min_noise, args.max_noise])
+                        x_lim=[args.min_noise, args.max_noise], log=True)
 
-    # if distributions are known, converge ditributions that are dependent on sensitive data (make data more fair)
-    """t_levels = [0.01, 1+0.01, 0.01]
-    fairness2 = distribution_convergence.con_dist(test, t_levels, args.dataset)"""
-
-    # We can only converge distributions for simulated datasets - fairness2 == None if using a real dataset
-    """if fairness2 is not None:
-        # plot and save the convergence fairness measures
-        fig1, ax1 = plt.subplots()
-        model_name = ['Baseline', 'Pre-processing', 'In-processing', 'Post-processing']
-        colours = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-        plt.figure(1)
-        for i in range(0, 4):
-            ax1.plot(levels, fairness2[i, :], label=model_name[i], color=colours[i])
-        ax1.legend()
-        ax1.set_xlabel('t')
-        ax1.set_ylabel('Difference of {}'.format(full_constraints[args.train_constraint]))
-        ax1.grid()
-        fig1.savefig(directory_fairness + '_convergence_figure')
-
-        # show test and model summaries
-        np.save(directory_fairness + '_resample', fairness2)"""
     print('Baseline accuracy score: ' + str(score_base))
     print('Pre-processing accuracy score: ' + str(score_pre))
     print('In-processing accuracy score: ' + str(score_in))
     print('Post-processing accuracy score: ' + str(score_post))
     test.summary()
 
-    roc.plot_ROC(test, directory_rel_robustness)
+    if args.roc:
+        roc.plot_ROC(test, directory_rel_robustness)
 
     print('DONE')

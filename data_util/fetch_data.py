@@ -323,7 +323,7 @@ def get_data(name):
         sens = 'V3'
 
         # This data set has a bad class ratio, so equalise it
-        (data, target) = data_util.fetch_data.equalize_data(data, target)
+        # (data, target) = data_util.fetch_data.equalize_data(data, target)
 
     if name == 'boston':
         (data, target) = fetch_boston(return_X_y=True, as_frame=True)
@@ -368,7 +368,6 @@ def get_data(name):
                                            'c_charge_degree', 'is_recid', 'is_violent_recid',
                                            'decile_score.1', 'two_year_recid']), 1, inplace=True)
 
-
         sens = 'race'
 
     if name == 'german':
@@ -384,7 +383,7 @@ def get_data(name):
         target = credit.iloc[:, -1]
 
         # This data set has a bad class ratio, so equalise it
-        (data, target) = data_util.fetch_data.equalize_data(data, target)
+        #(data, target) = data_util.fetch_data.equalize_data(data, target)
 
         # we only car about sex
         data['i'].values[(data['i'].values == 'A91')] = int(1)
@@ -394,6 +393,12 @@ def get_data(name):
         data['i'].values[(data['i'].values == 'A95')] = int(0)
 
         # sensitive attribute is sex
+        count = 0
+        for i in range(0, len(data['i'])):
+            print(data.iloc[i]['i'])
+            if data.iloc[i]['i'] == 0:
+                if target.iloc[i] == 2:
+                    count += 1
         sens = 'i'
 
     if name == 'dutch':
@@ -403,8 +408,7 @@ def get_data(name):
         data = dutch.iloc[:, :-1]
         target = dutch.iloc[:, -1]
 
-        # This data set has a bad class ratio, so equalise it
-        sens='sex'
+        sens = 'sex'
 
     if name == 'law':
         law = pd.read_csv('data_input/law_school_clean.csv', sep=',')
@@ -413,8 +417,7 @@ def get_data(name):
         data = law.iloc[:, :-1]
         target = law.iloc[:, -1]
 
-        # This data set has a bad class ratio, so equalise it
-        sens='race'
+        sens = 'race'
 
     if name == 'employ':
         cali_data = pd.read_csv('data_input/psam_p06.csv')
@@ -588,7 +591,7 @@ def get_data(name):
         for row in range(0, size):
             data[row, 0] = data[row, 2]
             prob = 1 / (1 + np.exp(-2 * data[row, 2] * (-1)))
-            target[row] = np.random.choice([-1, 1], p=[prob, 1-prob])
+            target[row] = np.random.choice([-1, 1], p=[prob, 1 - prob])
             data[row, 1] = target[row] + np.random.normal(loc=0, scale=1.0)
 
         data = pd.DataFrame(data,
@@ -602,40 +605,47 @@ def get_data(name):
         sens = 'C'
 
     if name == 'unfair_2':
-        size = 100000
+        size = 1000000
+        # seed the pseudo-random number generator so experiments can be repeated
         np.random.seed(123)
+
+        # preallocate space for data
         data = np.asarray([np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.normal(loc=0.0, scale=1.0, size=size),
                            np.random.choice([-1, 1], size=size)])
-
         data = np.transpose(data)
 
         target = np.transpose(np.array(np.random.choice([-1, 1], size=size)))
 
-        mean1 = (2 * np.exp(2)) / (np.exp(2) + 1)
-        mean0 = 0
-        var1 = (np.exp(4) - 1) / ((np.exp(2) + 1) ** 2)
-        var0 = (np.exp(-4) + 1) / ((np.exp(-2) + 1) ** 2)
-
+        # generate the causality model
         for row in range(0, size):
-            data[row, 0] = data[row, 3]
-            if data[row, 3] == 1:
-                data[row, 2] = np.random.normal(loc=mean1, scale=var1) + 1
-            else:
-                data[row, 2] = np.random.normal(loc=mean0, scale=var0) - 1
-            prob = 1 / (1 + np.exp(-2 * data[row, 2]))
-            target[row] = np.random.choice([-1, 1], p=[1 - prob, prob])
-            data[row, 1] = target[row] + np.random.normal(loc=0, scale=1.0)
+            # allocate target
+            a = data[row, 3]
+            y = [-1, 1]
+            target[row] = np.random.choice(y, p=[1 / (1 + np.exp(-2 * a * y[0])), 1 / (1 + np.exp(-2 * a * y[1]))])
 
+            # allocate feature 2
+            X_1 = data[row, 0]
+            Y = target[row]
+            data[row, 1] = X_1 + Y
+
+            # allocate feature 3
+            rand_1 = np.random.normal(a + 1, 1)
+            rand_2 = np.random.normal(a - 1, 1)
+            data[row, 2] = (1 / (1 + np.exp(-2 * a))) * rand_1 + (1 / (1 + np.exp(2 * a))) * rand_2
+
+        # convert to a data frame
         data = pd.DataFrame(data,
                             columns=['A', 'B', 'C', 'D'])
 
         target = pd.Series(target)
 
+        # make the protected feature discrete
         for col in ['D']:
             data[col] = data[col].astype('category')
 
+        # save protected feature column name
         sens = 'D'
 
     return data, target, sens
