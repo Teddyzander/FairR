@@ -9,7 +9,7 @@ If fairness of an AI $f$ over an input space $X$ is measured using a probability
 
 $R_k=\frac{M(f,X+\epsilon_k)}{M(f,X)}$ for $k>0$
 
-where $\epsilon$ is a perturbation to the input space, and $k$ is the strength of this perturbation.
+where $\epsilon_k$ is a perturbation to the input space, and $k$ is the strength of this perturbation.
 
 <img src="https://user-images.githubusercontent.com/49641102/177456336-d71d7cce-0110-44ca-8f20-dac351e4515b.png" width="800">
 
