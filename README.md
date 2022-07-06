@@ -2,7 +2,7 @@
 
 Project developed by Edward Small and Wei Shao to measure the stability and consistency of models that pertain to give fair solutions.
 
-<img src="https://user-images.githubusercontent.com/49641102/177453318-9f89f3b2-ac80-4921-a332-f83aba576f75.png" width="480"> <img src="https://user-images.githubusercontent.com/49641102/177453379-ab4c726b-ffc5-444b-bbe1-4b37647914eb.png" width="480">
+<img src="https://user-images.githubusercontent.com/49641102/177453318-9f89f3b2-ac80-4921-a332-f83aba576f75.png" width="400"> <img src="https://user-images.githubusercontent.com/49641102/177453379-ab4c726b-ffc5-444b-bbe1-4b37647914eb.png" width="400">
 
 
 If fairness of an AI $f$ over an input space $X$ is measured using a probability function $M(f, X)$, then robustness $R$ is measured via:
