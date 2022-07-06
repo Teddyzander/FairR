@@ -1,0 +1,34 @@
+For adult income:
+
+python main.py --dataset adult --min_noise 0.1 --max_noise 10 --noise_iters 10 --model_iters 1000 --model_type SGD --step_size 0.1 --train_constraint dp
+python main.py --dataset adult --min_noise 0.1 --max_noise 10 --noise_iters 10 --model_iters 1000 --model_type SGD --step_size 0.1 --train_constraint eo
+python main.py --dataset adult --min_noise 0.1 --max_noise 10 --noise_iters 10 --model_iters 1000 --model_type SGD --step_size 0.1 --train_constraint fp
+python main.py --dataset adult --min_noise 0.1 --max_noise 10 --noise_iters 10 --model_iters 1000 --model_type SGD --step_size 0.1 --train_constraint tp
+
+For COMPAS:
+
+python main.py --dataset compas --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 1000 --model_type DTC --step_size 0.1 --train_constraint dp
+python main.py --dataset compas --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 1000 --model_type DTC --step_size 0.1 --train_constraint eo
+python main.py --dataset compas --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 1000 --model_type DTC --step_size 0.1 --train_constraint fp
+python main.py --dataset compas --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 1000 --model_type DTC --step_size 0.1 --train_constraint tp
+
+For bank marketing:
+
+python main.py --dataset bank --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type NB --step_size 0.1 --train_constraint dp
+python main.py --dataset bank --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type NB --step_size 0.1 --train_constraint eo
+python main.py --dataset bank --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type NB --step_size 0.1 --train_constraint fp
+python main.py --dataset bank --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type NB --step_size 0.1 --train_constraint tp
+
+For german credit:
+
+python main.py --dataset german --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type SVC --step_size 0.1 --train_constraint dp
+python main.py --dataset german --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type SVC --step_size 0.1 --train_constraint eo
+python main.py --dataset german --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type SVC --step_size 0.1 --train_constraint fp
+python main.py --dataset german --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type SVC --step_size 0.1 --train_constraint tp
+
+For law school:
+
+python main.py --dataset law --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type LR --step_size 0.1 --train_constraint dp
+python main.py --dataset law --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type LR --step_size 0.1 --train_constraint eo
+python main.py --dataset law --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type LR --step_size 0.1 --train_constraint fp
+python main.py --dataset law --min_noise 0.1 --max_noise 10 --noise_iters 1000 --model_iters 100 --model_type LR --step_size 0.1 --train_constraint tp

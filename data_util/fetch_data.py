@@ -393,12 +393,6 @@ def get_data(name):
         data['i'].values[(data['i'].values == 'A95')] = int(0)
 
         # sensitive attribute is sex
-        count = 0
-        for i in range(0, len(data['i'])):
-            print(data.iloc[i]['i'])
-            if data.iloc[i]['i'] == 0:
-                if target.iloc[i] == 2:
-                    count += 1
         sens = 'i'
 
     if name == 'dutch':
