@@ -1,6 +1,6 @@
 # Robustness-Of-Fairness-2.0
 
-Project developed by Edward Small and Wei Shao to measure the stability and consistency of models that pertain to give fair solutions.
+Project developed by [Edward Small](https://www.admscentre.org.au/edward-small/) and [Dr. Wei Shao](https://swsamleo.github.io/wei_shao.github.io/) to measure the stability and consistency of models that pertain to give fair solutions.
 
 <img src="https://user-images.githubusercontent.com/49641102/177453318-9f89f3b2-ac80-4921-a332-f83aba576f75.png" width="400"> <img src="https://user-images.githubusercontent.com/49641102/177453379-ab4c726b-ffc5-444b-bbe1-4b37647914eb.png" width="400">
 
@@ -12,6 +12,8 @@ $R_k=\frac{M(f,X+\epsilon_k)}{M(f,X)}$ for $k>0$
 where $\epsilon$ is a perturbation to the input space, and $k$ is the strength of this perturbation.
 
 <img src="https://user-images.githubusercontent.com/49641102/177456336-d71d7cce-0110-44ca-8f20-dac351e4515b.png" width="800">
+
+We desire combinations of models $f$, data $X$ and measures $M$ such that $R_k \leq 1$ for $k>0$.
 
 To use the code, create a local copy using the git URL and install the required packages usint _pip install -r requirements.txt_. The code was written using python 3.9
 
