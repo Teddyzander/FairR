@@ -15,7 +15,7 @@ where $\epsilon_k$ is a perturbation to the input space, and $k$ is the strength
 
 We desire combinations of models $f$, data $X$ and measures $M$ such that $R_k \leq 1$ for $k>0$.
 
-To use the code, create a local copy using the git URL and install the required packages usint _pip install -r requirements.txt_. The code was written using python 3.9
+To use the code, create a local copy using the git URL and install the required packages using _pip install -r requirements.txt_. The code was written using python 3.9
 
 The following is a list of command line arguments:
 
