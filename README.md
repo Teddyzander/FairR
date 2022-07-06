@@ -11,6 +11,8 @@ $R_k=\frac{M(f,X+\epsilon_k)}{M(f,X)}$ for $k>0$
 
 where $\epsilon$ is a perturbation to the input space, and $k$ is the strength of this perturbation.
 
+<img src="https://user-images.githubusercontent.com/49641102/177456336-d71d7cce-0110-44ca-8f20-dac351e4515b.png" width="800">
+
 To use the code, create a local copy using the git URL and install the required packages usint _pip install -r requirements.txt_. The code was written using python 3.9
 
 The following is a list of command line arguments:
